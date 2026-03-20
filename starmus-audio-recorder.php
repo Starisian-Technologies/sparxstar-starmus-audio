@@ -3,7 +3,7 @@
 /**
  * SPARXSTAR Starmus Audio
  *
- * Production bootloader for the Starmus Audio Recorder plugin.
+ * Production bootloader for the Sparxstar Starmus Audio plugin.
  *
  * Responsibilities:
  * - Load Composer autoloader
@@ -22,7 +22,7 @@
  * @license           Starisian Technologies Proprietary
  *
  * @wordpress-plugin
- * Plugin Name:       Starmus Audio Recorder
+ * Plugin Name:       Sparxstar Starmus Audio
  * Plugin URI:        https://starisian.com
  * Description:       Mobile-friendly audio recorder optimized for emerging markets.
  * Version:           0.9.2
@@ -359,7 +359,7 @@ final class Starmus_Audio_Recorder
             // Boot the App Instance
             \Starisian\Sparxstar\Starmus\StarmusAudioRecorder::starmus_run();
         } catch (\Throwable $e) {
-            error_log('SPARXSTAR Starmus Audio Recorder Boot Failed: ' . $e->getMessage());
+            error_log('SPARXSTAR Starmus Audio Boot Failed: ' . $e->getMessage());
         }
     }
 
@@ -407,7 +407,7 @@ final class Starmus_Audio_Recorder
     private function starmusHandleOrchestratorNotFound(): void
     {
         if (defined('WP_DEBUG') && WP_DEBUG && ( ! defined('WP_ENVIRONMENT_TYPE') || wp_get_environment_type() !== 'production')) {
-            error_log('SPARXSTAR Starmus Audio Recorder: Main orchestrator class not found.');
+            error_log('SPARXSTAR Starmus Audio: Main orchestrator class not found.');
         }
 
         add_action(

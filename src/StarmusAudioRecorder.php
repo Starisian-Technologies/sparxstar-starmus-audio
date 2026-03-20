@@ -441,6 +441,7 @@ final class StarmusAudioRecorder
                 StarmusLogger::info('Starmus Info: StarmusTaskManager initialized successfully.');
             }
 
+            $appMode = null;
             if (class_exists(SparxstarAppMode::class)) {
                 $appMode = new SparxstarAppMode();
                 StarmusLogger::info('Starmus Info: SparxstarAppMode initialized successfully.');
@@ -448,7 +449,7 @@ final class StarmusAudioRecorder
 
             // Shortcodes
             if (class_exists(StarmusShortcodeLoader::class)) {
-                $this->frontend = new StarmusShortcodeLoader($this->get_DAL(), $this->getSettings(), $this->get_ProsodyDAL(), $appMode ?? null);
+                $this->frontend = new StarmusShortcodeLoader($this->get_DAL(), $this->getSettings(), $this->get_ProsodyDAL(), $appMode);
                 StarmusLogger::info('Starmus Info: StarmusShortcodeLoader initialized successfully.');
             }
         } catch (Throwable $throwable) {
