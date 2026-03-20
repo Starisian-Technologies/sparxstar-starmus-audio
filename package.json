@@ -4,7 +4,7 @@
     "description": "Mobile-first, offline-friendly audio recorder for WordPress.",
     "private": true,
     "type": "module",
-    "main": "src/js/starmus-audio-recorder-module.js",
+    "main": "src/js/starmus-main.js",
     "scripts": {
         "lint": "pnpm run lint:js && pnpm run lint:css && pnpm run lint:md",
         "lint:js": "eslint \"src/js/**/*.js\"",

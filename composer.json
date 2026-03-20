@@ -1,5 +1,5 @@
 {
-    "name": "starisian/starmus-audio-recorder",
+    "name": "starisian/sparxstar-starmus-audio",
     "description": "Mobile-first, offline-friendly audio recorder for WordPress.",
     "type": "wordpress-plugin",
     "license": "proprietary",
@@ -30,8 +30,8 @@
     ],
     "homepage": "https://starisian.com",
     "support": {
-        "issues": "https://github.com/Starisian-Technologies/starmus-audio-recorder/issues",
-        "source": "https://github.com/Starisian-Technologies/starmus-audio-recorder"
+        "issues": "https://github.com/Starisian-Technologies/sparxstar-starmus-audio/issues",
+        "source": "https://github.com/Starisian-Technologies/sparxstar-starmus-audio"
     },
     "keywords": [
         "wordpress",
@@ -47,7 +47,7 @@
     "repositories": [
         {
             "type": "git",
-            "url": "https://github.com/Starisian-Technologies/starmus-audio-recorder.git"
+            "url": "https://github.com/Starisian-Technologies/sparxstar-starmus-audio.git"
         },
         {
             "type": "composer",

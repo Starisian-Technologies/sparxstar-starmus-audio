@@ -116,10 +116,10 @@ Example URL: `https://yoursite.com/edit-recording/?post_id=123&nonce=...`
 
 The plugin uses a four-part modular architecture for its front-end application:
 
-1. **`sparxstar-starmus-audio-module.js` (The Engine):** A secure, modern recording engine using `MediaRecorder`. It handles mic access, calibration, and speech recognition. It has no knowledge of the UI or uploads.
-2. **`sparxstar-starmus-audio-submissions-handler.js` (The Uploader):** The submission specialist. It manages the `tus.io` resumable uploads, the offline IndexedDB queue, and the fallback to the WordPress REST API.
-3. **`sparxstar-starmus-audio-ui-controller.js` (The UI Controller):** The "glue" for modern browsers. It manages the two-step UI, validates form fields, and delegates tasks to the Engine and Uploader modules.
-4. **`sparxstar-starmus-audio-submissions.js` (The Legacy Fallback):** A self-contained script loaded by older browsers (`nomodule`). It provides polyfills and a simpler submission process, including geolocation capture.
+1. **`starmus-audio-recorder-module.js` (The Engine):** A secure, modern recording engine using `MediaRecorder`. It handles mic access, calibration, and speech recognition. It has no knowledge of the UI or uploads.
+2. **`starmus-audio-recorder-submissions-handler.js` (The Uploader):** The submission specialist. It manages the `tus.io` resumable uploads, the offline IndexedDB queue, and the fallback to the WordPress REST API.
+3. **`starmus-audio-recorder-ui-controller.js` (The UI Controller):** The "glue" for modern browsers. It manages the two-step UI, validates form fields, and delegates tasks to the Engine and Uploader modules.
+4. **`starmus-audio-recorder-submissions.js` (The Legacy Fallback):** A self-contained script loaded by older browsers (`nomodule`). It provides polyfills and a simpler submission process, including geolocation capture.
 
 ### Third-Party Libraries
 
