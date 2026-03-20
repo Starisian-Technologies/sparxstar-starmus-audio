@@ -3,7 +3,7 @@
 /**
  * SPARXSTAR Starmus Audio
  *
- * Production bootloader for the Starmus Audio Recorder plugin.
+ * Production bootloader for the Sparxstar Starmus Audio plugin.
  *
  * Responsibilities:
  * - Load Composer autoloader
@@ -22,7 +22,7 @@
  * @license           Starisian Technologies Proprietary
  *
  * @wordpress-plugin
- * Plugin Name:       Starmus Audio Recorder
+ * Plugin Name:       Sparxstar Starmus Audio
  * Plugin URI:        https://starisian.com
  * Description:       Mobile-friendly audio recorder optimized for emerging markets.
  * Version:           0.9.2
@@ -97,7 +97,7 @@ add_action('init', function () {
  *
  * @since 0.9.0
  */
-final class Starmus_Audio_Recorder
+final class StarmusAudioRecorder
 {
     /**
      * Plugin Version.
@@ -137,17 +137,17 @@ final class Starmus_Audio_Recorder
     /**
      * Singleton Instance.
      *
-     * @var Starmus_Audio_Recorder|null
+     * @var StarmusAudioRecorder|null
      */
-    private static ?Starmus_Audio_Recorder $instance = null;
+    private static ?StarmusAudioRecorder $instance = null;
 
     /**
      * Retrieve the singleton instance.
      *
      * @since 0.9.0
-     * @return Starmus_Audio_Recorder The singleton instance.
+     * @return StarmusAudioRecorder The singleton instance.
      */
-    public static function starmusGetInstance(): Starmus_Audio_Recorder
+    public static function starmusGetInstance(): StarmusAudioRecorder
     {
         if (self::$instance === null) {
             self::$instance = new self();
@@ -357,9 +357,9 @@ final class Starmus_Audio_Recorder
 
         try {
             // Boot the App Instance
-            \Starisian\Sparxstar\Starmus\StarmusAudioRecorder::starmus_run();
+            \Starisian\Sparxstar\Starmus\StarmusAudioRecorder::starmusRun();
         } catch (\Throwable $e) {
-            error_log('SPARXSTAR Starmus Audio Recorder Boot Failed: ' . $e->getMessage());
+            error_log('SPARXSTAR Starmus Audio Boot Failed: ' . $e->getMessage());
         }
     }
 
@@ -407,7 +407,7 @@ final class Starmus_Audio_Recorder
     private function starmusHandleOrchestratorNotFound(): void
     {
         if (defined('WP_DEBUG') && WP_DEBUG && ( ! defined('WP_ENVIRONMENT_TYPE') || wp_get_environment_type() !== 'production')) {
-            error_log('SPARXSTAR Starmus Audio Recorder: Main orchestrator class not found.');
+            error_log('SPARXSTAR Starmus Audio: Main orchestrator class not found.');
         }
 
         add_action(
@@ -434,10 +434,10 @@ final class Starmus_Audio_Recorder
     {
         try {
             if (class_exists(\Starisian\Sparxstar\Starmus\core\StarmusPostTypeLoader::class)) {
-                \Starisian\Sparxstar\Starmus\core\StarmusPostTypeLoader::sparxStarmusGetInstance();
+                \Starisian\Sparxstar\Starmus\core\StarmusPostTypeLoader::starmusGetInstance();
             }
             if (class_exists(\Starisian\Sparxstar\Starmus\cron\StarmusCron::class)) {
-                \Starisian\Sparxstar\Starmus\cron\StarmusCron::starmus_activate();
+                \Starisian\Sparxstar\Starmus\cron\StarmusCron::starmusActivate();
             }
         } catch (\Throwable $e) {
             error_log('Starmus Activation Error: ' . $e->getMessage());
@@ -457,7 +457,7 @@ final class Starmus_Audio_Recorder
     {
         try {
             if (class_exists(\Starisian\Sparxstar\Starmus\cron\StarmusCron::class)) {
-                \Starisian\Sparxstar\Starmus\cron\StarmusCron::starmus_deactivate();
+                \Starisian\Sparxstar\Starmus\cron\StarmusCron::starmusDeactivate();
             }
         } catch (\Throwable $e) {
             error_log('Starmus Deactivation Error: ' . $e->getMessage());
@@ -486,9 +486,9 @@ final class Starmus_Audio_Recorder
     }
 }
 
-register_activation_hook(__FILE__, [Starmus_Audio_Recorder::class, 'starmusOnActivate']);
-register_deactivation_hook(__FILE__, [Starmus_Audio_Recorder::class, 'starmusOnDeactivate']);
-register_uninstall_hook(__FILE__, [Starmus_Audio_Recorder::class, 'starmusOnUninstall']);
+register_activation_hook(__FILE__, [StarmusAudioRecorder::class, 'starmusOnActivate']);
+register_deactivation_hook(__FILE__, [StarmusAudioRecorder::class, 'starmusOnDeactivate']);
+register_uninstall_hook(__FILE__, [StarmusAudioRecorder::class, 'starmusOnUninstall']);
 
 // Initialize the plugin
-Starmus_Audio_Recorder::starmusGetInstance();
+StarmusAudioRecorder::starmusGetInstance();

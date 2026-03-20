@@ -47,13 +47,13 @@ final class StarmusPostTypeLoader implements IContentBundle
      */
     private function __construct()
     {
-        add_action('init', $this->sparxStarmusRegister(...), 20);
+        add_action('init', $this->starmusRegister(...), 20);
     }
 
     /**
      * Gets the singleton instance of StarmusPostTypeLoader.
      */
-    public static function sparxStarmusGetInstance(): StarmusPostTypeLoader
+    public static function starmusGetInstance(): StarmusPostTypeLoader
     {
         if ( ! self::$instance instanceof \Starisian\Sparxstar\Starmus\core\StarmusPostTypeLoader) {
             self::$instance = new StarmusPostTypeLoader();
@@ -70,7 +70,7 @@ final class StarmusPostTypeLoader implements IContentBundle
      *
      * @version 6.8
      */
-    public function sparxStarmusRegister(): void
+    public function starmusRegister(): void
     {
         add_action('acf/include_fields', function (): void {
             if ( ! \function_exists('acf_add_local_field_group')) {
@@ -4946,12 +4946,12 @@ final class StarmusPostTypeLoader implements IContentBundle
         });
     }
 
-    public function sparxStarmusGetId(): string
+    public function starmusGetId(): string
     {
         return 'sparxstar-starmus-audio';
     }
 
-    public static function sparxStarmusResetInstance(): void
+    public static function starmusResetInstance(): void
     {
         self::$instance = null;
     }

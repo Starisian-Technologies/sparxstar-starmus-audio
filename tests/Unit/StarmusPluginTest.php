@@ -17,8 +17,8 @@ final class StarmusPluginTest extends TestCase
 {
     public function testSingletonInstanceReturnsSameObject(): void
     {
-        $instance1 = StarmusAudioRecorder::starmus_get_instance();
-        $instance2 = StarmusAudioRecorder::starmus_get_instance();
+        $instance1 = StarmusAudioRecorder::starmusGetInstance();
+        $instance2 = StarmusAudioRecorder::starmusGetInstance();
 
         $this->assertInstanceOf(StarmusAudioRecorder::class, $instance1);
         $this->assertSame($instance1, $instance2, 'Expected the same instance (singleton)');
@@ -27,7 +27,7 @@ final class StarmusPluginTest extends TestCase
     public function testInitMethodRunsWithoutError(): void
     {
         // Initialization happens in constructor, triggered by get_instance
-        $plugin = StarmusAudioRecorder::starmus_get_instance();
+        $plugin = StarmusAudioRecorder::starmusGetInstance();
 
         // You might want to mock dependencies later
         $this->expectNotToPerformAssertions();

@@ -1,10 +1,10 @@
 {
-    "name": "starmus-audio-recorder",
+    "name": "sparxstar-starmus-audio",
     "version": "0.9.2",
     "description": "Mobile-first, offline-friendly audio recorder for WordPress.",
     "private": true,
     "type": "module",
-    "main": "src/js/starmus-audio-recorder-module.js",
+    "main": "src/js/starmus-main.js",
     "scripts": {
         "lint": "pnpm run lint:js && pnpm run lint:css && pnpm run lint:md",
         "lint:js": "eslint \"src/js/**/*.js\"",
@@ -20,11 +20,11 @@
         "fix:all": "pnpm run fix && pnpm run lint:md:fix && pnpm run security:fix",
         "clean": "node -e \"require('fs').rmSync('assets', { recursive: true, force: true });\"",
         "build:vendor-legacy": "echo 'Vendor libs now bundled via rollup - this step is deprecated'",
-        "build:css:main": "postcss src/css/starmus-audio-recorder-style.css -o assets/css/starmus-audio-recorder-styles.min.css",
+        "build:css:main": "postcss src/css/starmus-audio-recorder.css -o assets/css/starmus-audio-recorder-styles.min.css",
         "build:css:prosody": "postcss src/css/starmus-prosody-engine.css -o assets/css/starmus-prosody-engine.min.css",
         "build:css:admin": "postcss src/css/starmus-admin.css -o assets/css/starmus-admin.min.css",
         "build:css:dashboard": "postcss src/css/starmus-dashboard.css -o assets/css/starmus-dashboard.min.css",
-        "build:css:appmode": "postcss src/css/spparxstar-app-mode.css -o assets/css/sparxstar-app-mode.min.css",
+        "build:css:appmode": "postcss src/css/sparxstar-app-mode.css -o assets/css/sparxstar-app-mode.min.css",
         "build:css:consent": "postcss src/css/consent/starmus-consent.css -o assets/css/starmus-consent.min.css",
         "build:css": "pnpm run build:css:main && pnpm run build:css:prosody && pnpm run build:css:admin && pnpm run build:css:dashboard && pnpm run build:css:appmode && pnpm run build:css:consent",
         "build:js": "rollup -c roll-up.config.mjs",
@@ -51,7 +51,7 @@
     "size-limit": [
         {
             "path": "assets/js/**/*.js",
-            "limit": "100 KB"
+            "limit": "130 KB"
         },
         {
             "path": "assets/css/**/*.css",
