@@ -83,10 +83,10 @@ if ( ! \defined('ABSPATH')) {
  * Usage:
  * ```php
  * // Called from main plugin file
- * StarmusAudioRecorder::starmus_run();
+ * StarmusAudioRecorder::starmusRun();
  *
  * // Access singleton instance
- * $plugin = StarmusAudioRecorder::starmus_get_instance();
+ * $plugin = StarmusAudioRecorder::starmusGetInstance();
  * ```
  *
  * @package Starisian\Sparxstar\Starmus
@@ -249,7 +249,7 @@ final class StarmusAudioRecorder
      *
      * @return StarmusAudioRecorder The singleton instance.
      */
-    public static function starmus_get_instance(): StarmusAudioRecorder
+    public static function starmusGetInstance(): StarmusAudioRecorder
     {
         if ( ! self::$instance instanceof StarmusAudioRecorder) {
             self::$instance = new self();
@@ -269,10 +269,10 @@ final class StarmusAudioRecorder
      *
      * @since 0.1.0
      */
-    public static function starmus_run(): void
+    public static function starmusRun(): void
     {
         error_log('Starmus Run Started.');
-        self::starmus_get_instance();
+        self::starmusGetInstance();
     }
 
     /**
@@ -289,7 +289,7 @@ final class StarmusAudioRecorder
      *
      * @return bool True when a supported field framework is available, false otherwise.
      */
-    public static function check_field_plugin_dependency(): bool
+    public static function checkFieldPluginDependency(): bool
     {
         return \function_exists('acf_get_instance');
     }
@@ -431,7 +431,7 @@ final class StarmusAudioRecorder
 
             // Admin
             if (class_exists(StarmusAdmin::class) && is_admin()) {
-                $this->admin = new StarmusAdmin($this->get_DAL(), $this->getSettings());
+                $this->admin = new StarmusAdmin($this->getDAL(), $this->getSettings());
                 StarmusLogger::info('Starmus Info: StarmusAdmin initialized successfully.');
             }
 
@@ -449,7 +449,7 @@ final class StarmusAudioRecorder
 
             // Shortcodes
             if (class_exists(StarmusShortcodeLoader::class)) {
-                $this->frontend = new StarmusShortcodeLoader($this->get_DAL(), $this->getSettings(), $this->get_ProsodyDAL(), $appMode);
+                $this->frontend = new StarmusShortcodeLoader($this->getDAL(), $this->getSettings(), $this->getProsodyDAL(), $appMode);
                 StarmusLogger::info('Starmus Info: StarmusShortcodeLoader initialized successfully.');
             }
         } catch (Throwable $throwable) {
@@ -479,7 +479,7 @@ final class StarmusAudioRecorder
 
             // Post Types (Must load early)
             if (class_exists(StarmusPostTypeLoader::class)) {
-                StarmusPostTypeLoader::sparxStarmusGetInstance();
+                StarmusPostTypeLoader::starmusGetInstance();
             }
 
             // Assets
@@ -489,14 +489,14 @@ final class StarmusAudioRecorder
 
             // Submission Logic
             if (class_exists(StarmusTusdHookHandler::class) && class_exists(StarmusSubmissionHandler::class)) {
-                $submission_handler = new StarmusSubmissionHandler($this->get_DAL(), $this->getSettings());
+                $submission_handler = new StarmusSubmissionHandler($this->getDAL(), $this->getSettings());
                 $tus_hook_handler = new StarmusTusdHookHandler($submission_handler);
                 $tus_hook_handler->register_hooks();
             }
 
             // REST API
             if (class_exists(StarmusRESTHandler::class)) {
-                new StarmusRESTHandler($this->get_DAL(), $this->getSettings());
+                new StarmusRESTHandler($this->getDAL(), $this->getSettings());
             }
 
             // Async Data Loading REST API (Retrieval)
@@ -512,7 +512,7 @@ final class StarmusAudioRecorder
             $post_processing_service = null;
 
             if (class_exists(StarmusFileService::class)) {
-                $file_service = new StarmusFileService($this->get_DAL());
+                $file_service = new StarmusFileService($this->getDAL());
                 $file_service->register_compatibility_hooks();
             }
 
@@ -521,11 +521,11 @@ final class StarmusAudioRecorder
             }
 
             if (class_exists(StarmusWaveformService::class)) {
-                $waveform_service = new StarmusWaveformService($this->get_DAL(), $file_service);
+                $waveform_service = new StarmusWaveformService($this->getDAL(), $file_service);
             }
 
             if (class_exists(StarmusPostProcessingService::class)) {
-                $post_processing_service = new StarmusPostProcessingService($this->get_DAL(), $file_service, $waveform_service, $id3_service);
+                $post_processing_service = new StarmusPostProcessingService($this->getDAL(), $file_service, $waveform_service, $id3_service);
             }
 
             // Cron Jobs
@@ -588,7 +588,7 @@ final class StarmusAudioRecorder
      *
      * @return IStarmusAudioDAL|null Active DAL instance or null when unavailable.
      */
-    public function get_DAL(): ?IStarmusAudioDAL
+    public function getDAL(): ?IStarmusAudioDAL
     {
         return $this->dal;
     }
@@ -598,7 +598,7 @@ final class StarmusAudioRecorder
      *
      * @since 1.2.0
      */
-    public function get_ProsodyDAL(): ?IStarmusProsodyDAL
+    public function getProsodyDAL(): ?IStarmusProsodyDAL
     {
         return $this->prosody_dal;
     }
