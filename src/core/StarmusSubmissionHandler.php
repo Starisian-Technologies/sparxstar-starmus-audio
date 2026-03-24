@@ -733,6 +733,7 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
 
             // SAVE MAPPED DATA FOR COMPARISON
             update_post_meta($audio_post_id, 'starmus_mapped_submission_data', json_encode($mapped_data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            $env_json = $form_data['_starmus_env'] ?? '';
             if ($env_json) {
                 $decoded_env = json_decode(wp_unslash($env_json), true);
                 if ($decoded_env) {

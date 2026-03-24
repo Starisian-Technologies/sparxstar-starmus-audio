@@ -39,8 +39,18 @@ parameters:
     # WordPress/ACF functions and methods
     - '#Call to an undefined method ACF#'
     - '#Function get_field not found#'
+    - '#Function update_field not found#'
     - '#Undefined variable: \$wpdb#'
     - '#Access to an undefined property#'
+
+    # WordPress constants not in stubs
+    - '#Constant AUTH_SALT not found#'
+    - '#Constant AUTH_KEY not found#'
+    - '#Constant SECURE_AUTH_KEY not found#'
+    - '#Constant SECURE_AUTH_SALT not found#'
+
+    # WordPress template type generics (known wp_unslash issue)
+    - '#Unable to resolve the template type T in call to function wp_unslash#'
 
     # Core PHP functions that PHPStan doesn't recognize
     - '#Undefined function .*(defined|function_exists|class_exists|file_exists|dirname|intval|array_unique|max|ceil|rawurlencode|usort|array_slice)#'

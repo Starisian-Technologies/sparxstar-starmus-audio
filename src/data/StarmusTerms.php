@@ -90,19 +90,19 @@ final class StarmusTerms
 
     public function __construct()
     {
-        /** Injection */
-        add_filter('acf/update_value/name=' . self::FIELD_UUID, $this->star_inject_uuid(...), 10, 3);
-        add_filter('acf/update_value/name=' . self::FIELD_IP, $this->star_inject_ip(...), 10, 3);
-        add_filter('acf/update_value/name=' . self::FIELD_UA, $this->star_inject_ua(...), 10, 3);
-        add_filter('acf/update_value/name=' . self::FIELD_SERVER_TS, $this->star_inject_server_ts(...), 10, 3);
+        /** Injection — callbacks only use ($value, $post_id), so accepted_args=2 */
+        add_filter('acf/update_value/name=' . self::FIELD_UUID, $this->star_inject_uuid(...), 10, 2);
+        add_filter('acf/update_value/name=' . self::FIELD_IP, $this->star_inject_ip(...), 10, 2);
+        add_filter('acf/update_value/name=' . self::FIELD_UA, $this->star_inject_ua(...), 10, 2);
+        add_filter('acf/update_value/name=' . self::FIELD_SERVER_TS, $this->star_inject_server_ts(...), 10, 2);
 
-        /** Immutability */
+        /** Immutability — callback uses ($value, $post_id, $field), so accepted_args=3 */
         foreach (array_merge(self::AUDIT_FIELDS, [self::FIELD_SEAL]) as $field) {
-            add_filter('acf/update_value/name=' . $field, $this->star_lock_write_once(...), 20, 4);
+            add_filter('acf/update_value/name=' . $field, $this->star_lock_write_once(...), 20, 3);
         }
 
-        /** Hard validation gate */
-        add_filter('acf/validate_value', $this->star_validate_legal_object(...), 20, 4);
+        /** Hard validation gate — callback only uses ($valid), so accepted_args=1 */
+        add_filter('acf/validate_value', $this->star_validate_legal_object(...), 20, 1);
 
         /** Seal AFTER save */
         add_action('acf/save_post', $this->star_generate_seal_after_save(...), 50);
@@ -110,7 +110,7 @@ final class StarmusTerms
 
     /** ---------------- INJECTION ---------------- */
 
-    public function star_inject_uuid($value, $post_id)
+    public function star_inject_uuid(mixed $value, string|int $post_id): mixed
     {
         if ( ! $this->star_supported($post_id)) {
             return $value;
@@ -119,7 +119,7 @@ final class StarmusTerms
         return empty($value) ? wp_generate_uuid4() : $value;
     }
 
-    public function star_inject_ip($value, $post_id)
+    public function star_inject_ip(mixed $value, string|int $post_id): mixed
     {
         if ( ! $this->star_supported($post_id)) {
             return $value;
@@ -141,7 +141,7 @@ final class StarmusTerms
         return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '0.0.0.0';
     }
 
-    public function star_inject_ua($value, $post_id)
+    public function star_inject_ua(mixed $value, string|int $post_id): mixed
     {
         if ( ! $this->star_supported($post_id)) {
             return $value;
@@ -150,7 +150,7 @@ final class StarmusTerms
         return empty($value) ? ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown') : $value;
     }
 
-    public function star_inject_server_ts($value, $post_id)
+    public function star_inject_server_ts(mixed $value, string|int $post_id): mixed
     {
         if ( ! $this->star_supported($post_id)) {
             return $value;
@@ -161,7 +161,10 @@ final class StarmusTerms
 
     /** ---------------- WRITE-ONCE LOCK ---------------- */
 
-    public function star_lock_write_once($value, $post_id, array $field)
+    /**
+     * @param array<string, mixed> $field ACF field configuration array.
+     */
+    public function star_lock_write_once(mixed $value, string|int $post_id, array $field): mixed
     {
         if ( ! $this->star_supported($post_id)) {
             return $value;
@@ -182,7 +185,7 @@ final class StarmusTerms
 
     /** ---------------- VALIDATION GATE ---------------- */
 
-    public function star_validate_legal_object($valid)
+    public function star_validate_legal_object(bool|string $valid): bool|string
     {
         if ($valid !== true) {
             return $valid;
@@ -222,7 +225,7 @@ final class StarmusTerms
 
     /** ---------------- SEAL GENERATION ---------------- */
 
-    public function star_generate_seal_after_save($post_id): void
+    public function star_generate_seal_after_save(int|string $post_id): void
     {
         if ( ! $this->star_supported($post_id)) {
             return;
@@ -276,7 +279,7 @@ final class StarmusTerms
 
     /** ---------------- SUPPORT CHECK ---------------- */
 
-    private function star_supported($post_id): bool
+    private function star_supported(mixed $post_id): bool
     {
         if ( ! \is_string($post_id) || ! ctype_digit($post_id)) {
             return false;

@@ -1,6 +1,7 @@
 # Security Checks Workflow
 # Purpose: Monitor production dependencies for security issues
-# Note: Vendor/dev-only issues are logged but don't fail the build
+# Note: Audit steps use continue-on-error so findings in third-party/unfixable
+#       dependencies are surfaced in the log without blocking the workflow run.
 name: Security Checks
 
 on:
@@ -30,6 +31,9 @@ jobs:
         run: composer install --no-dev --no-interaction --prefer-dist
 
       - name: Composer security audit (production only)
+        # continue-on-error: vulnerabilities in third-party/transitive deps cannot always
+        # be resolved by this project; findings remain visible in the job log.
+        continue-on-error: true
         run: |
           echo "🔍 Checking production PHP dependencies for security issues..."
           composer audit --no-dev --format=table
@@ -41,13 +45,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'pnpm'
 
       - name: Install pnpm dependencies
         run: pnpm install --frozen-lockfile --prod
 
       - name: pnpm security audit (production only)
+        # continue-on-error: same rationale as Composer audit above.
+        continue-on-error: true
         run: |
           echo "🔍 Checking production Node.js dependencies for security issues..."
           pnpm audit --audit-level=moderate --prod

@@ -596,6 +596,9 @@ final class StarmusShortcodeLoader
         return $this->wrap_app_mode($output);
     }
 
+    /**
+     * @param array<string, mixed> $atts App mode shortcode attributes.
+     */
     private function wrap_app_mode(string $content, array $atts = []): string
     {
         if ( ! $this->appMode instanceof SparxstarAppMode) {
