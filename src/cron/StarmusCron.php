@@ -205,7 +205,7 @@ final readonly class StarmusCron
     }
 
     /** Schedule recurring cleanup on plugin activation. */
-    public static function starmus_activate(): void
+    public static function starmusActivate(): void
     {
         if ( ! wp_next_scheduled(self::CLEANUP_TEMP_FILES_HOOK)) {
             wp_schedule_event(time() + 5 * MINUTE_IN_SECONDS, 'hourly', self::CLEANUP_TEMP_FILES_HOOK);
@@ -213,7 +213,7 @@ final readonly class StarmusCron
     }
 
     /** Unschedule cleanup on deactivation. */
-    public static function starmus_deactivate(): void
+    public static function starmusDeactivate(): void
     {
         $timestamp = wp_next_scheduled(self::CLEANUP_TEMP_FILES_HOOK);
         if ($timestamp) {

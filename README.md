@@ -1,12 +1,12 @@
-![Starmus Audio Recorder](https://github.com/user-attachments/assets/c51b26bb-f95f-4d8c-9340-dacdacca5d4f)
+![Sparxstar Starmus Audio](https://github.com/user-attachments/assets/c51b26bb-f95f-4d8c-9340-dacdacca5d4f)
 
-# Starmus Audio Recorder
+# Sparxstar Starmus Audio
 
 A mobile-first audio recording and annotation plugin for WordPress, designed for low-bandwidth environments and legacy device compatibility.
 
 ---
 
-**=== Starmus Audio Recorder ===**
+**=== Sparxstar Starmus Audio ===**
 
 **Contributors:** Starisian Technologies, Max Barrett
 
@@ -18,19 +18,18 @@ A mobile-first audio recording and annotation plugin for WordPress, designed for
 
 **Requires PHP:** 8.2
 
-**Stable tag:** v0.5.0
+**Stable tag:** v0.9.2
 
 **License:** Starisian Technologies Proprietary License (STPD) See LICENSE.md
 
 **Copyright:** Copyright (c) 2025-2026 Starisian Technologies. All rights reserved.
 
-[![CodeQL](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/github-code-scanning/codeql) [![Copilot](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/copilot-swe-agent/copilot/badge.svg)](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/copilot-swe-agent/copilot) [![Copilot code review](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/copilot-pull-request-reviewer/copilot-pull-request-reviewer/badge.svg)](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/copilot-pull-request-reviewer/copilot-pull-request-reviewer) [![Dependabot Updates](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/dependabot/dependabot-updates)
+[![CodeQL](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/github-code-scanning/codeql) [![Copilot](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/copilot-swe-agent/copilot/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/copilot-swe-agent/copilot) [![Copilot code review](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/copilot-pull-request-reviewer/copilot-pull-request-reviewer/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/copilot-pull-request-reviewer/copilot-pull-request-reviewer) [![Dependabot Updates](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/dependabot/dependabot-updates)
 
-[![Security Checks](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/security.yml/badge.svg)](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/security.yml) [![Proof HTML, Lint JS & CSS](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/proof-html-js-css.yml/badge.svg)](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/proof-html-js-css.yml) [![Release Code Quality Final Review](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/release.yml/badge.svg)](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/release.yml) [![Generate Documentation](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/docs.yml/badge.svg)](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/docs.yml)
+[![Security Checks](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/security.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/security.yml) [![Proof HTML, Lint JS & CSS](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/proof-html-js-css.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/proof-html-js-css.yml) [![Release Code Quality Final Review](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/release.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/release.yml) [![Generate Documentation](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/docs.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/docs.yml)
 
-[![Release Code Quality Final Review](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/release.yml/badge.svg)](https://github.com/Starisian-Technologies/starmus-audio-recorder/actions/workflows/release.yml)
 
-The Starmus Audio Recorder is a comprehensive WordPress solution for capturing, managing, and annotating user-submitted audio. Its standout feature is a resilient, offline-first submission system, ensuring recordings are never lost, even on unstable networks.
+The Sparxstar Starmus Audio plugin is a comprehensive WordPress solution for capturing, managing, and annotating user-submitted audio. Its standout feature is a resilient, offline-first submission system, ensuring recordings are never lost, even on unstable networks.
 
 The plugin is built with a modern, modular architecture that intelligently provides advanced features like microphone calibration and speech-to-text to capable browsers, while offering a robust fallback experience for older devices.
 
@@ -53,8 +52,8 @@ Named after the iconic Starmus Festival, where rock legends and astrophysicists 
 
 ## 📦 Requirements
 
-- **WordPress:** 6.4 or higher
-- **PHP:** 8.0 or higher
+- **WordPress:** 6.8 or higher
+- **PHP:** 8.2 or higher
 - **Server:**
     - A `tus.io` compatible server endpoint is **highly recommended** for resumable uploads. The plugin includes a fallback to the standard WordPress REST API.
     - The `audiowaveform` binary is required on the server's PATH for waveform generation in the editor.
@@ -131,7 +130,7 @@ This plugin relies on the following excellent open-source libraries, which shoul
 
 ### Core Hooks
 
-The Starmus Audio Recorder is a lightweight, front-end WordPress plugin that allows users to record audio directly in the browser using the MediaRecorder API.
+The Sparxstar Starmus Audio is a lightweight, front-end WordPress plugin that allows users to record audio directly in the browser using the MediaRecorder API.
 
 - **`starmus_before_recorder_render` (Action)**
   Fires before recorder form displays.
@@ -233,7 +232,7 @@ Full details in `ETHICS.md` or by request.
 
 Starmus honors the **Starmus Festival** founded by Dr. Garik Israelian and **Dr. Brian May** (guitarist of Queen \+ astrophysicist). Where **science meets sound**, this plugin captures that same cosmic energy — whether it’s a voice memo beneath the stars or an oral history from a rural village.
 
-**Starmus Audio Recorder** is a small tool with a **big mission**: to preserve stories, songs, and spirit in their purest form.
+**Sparxstar Starmus Audio** is a small tool with a **big mission**: to preserve stories, songs, and spirit in their purest form.
 
 ---
 

@@ -41,7 +41,7 @@ final class StarmusRestApiTest extends TestCase
 	public function testRestNamespaceFollowsStarConvention(): void
 	{
 		$namespace = STARMUS_REST_NAMESPACE;
-		$this->assertStringStartsWith('starmus/', $namespace, 'REST namespace must follow STAR convention');
+		$this->assertStringStartsWith('star-', $namespace, 'REST namespace must follow star- convention');
 	}
 
 	public function testIdempotencyWithSameUuid(): void

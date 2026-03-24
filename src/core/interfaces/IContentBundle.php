@@ -34,10 +34,10 @@ interface IContentBundle
      * Register CPT, fields, taxonomies, and rules.
      * This method is allowed to call SCF functions directly.
      */
-    public function sparxStarmusRegister(): void;
+    public function starmusRegister(): void;
 
     /**
      * Stable identifier for auditing / registry / tooling.
      */
-    public function sparxStarmusGetId(): string;
+    public function starmusGetId(): string;
 }
