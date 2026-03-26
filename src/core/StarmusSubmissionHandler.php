@@ -49,7 +49,6 @@ declare(strict_types=1);
  * @see StarmusSettings Plugin configuration management
  * @see StarmusPostProcessingService Audio processing service
  */
-
 namespace Starisian\Sparxstar\Starmus\core;
 
 use function apply_filters;
