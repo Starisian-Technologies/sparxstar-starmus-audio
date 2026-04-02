@@ -380,12 +380,12 @@ try {
                                             <pre style="font-size:0.75em; white-space:pre-wrap; word-wrap: break-word; margin: 0;"><?php
                                                                                                                                         // Pretty-print the full JSON for readability
                                                                                                                                         $decoded_runtime = json_decode((string)$runtime_raw);
-                                                                                                                                        if ($decoded_runtime !== null) {
-                                                                                                                                            echo esc_html(json_encode($decoded_runtime, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-                                                                                                                                        } else {
-                                                                                                                                            echo esc_html($runtime_raw);
-                                                                                                                                        }
-                                                                                                                                        ?></pre>
+                            if ($decoded_runtime !== null) {
+                                echo esc_html(json_encode($decoded_runtime, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+                            } else {
+                                echo esc_html($runtime_raw);
+                            }
+                            ?></pre>
                                         </div>
                                         <div style="margin-top: 10px; display: flex; gap: 8px;">
                                             <button type="button" class="button button-secondary" onclick="var d=<?php echo $runtime_raw; ?>;navigator.clipboard.writeText(JSON.stringify(d,null,2)).then(()=>alert('Copied!')).catch(()=>alert('Failed'))">📋 Copy JSON</button>
@@ -405,12 +405,12 @@ try {
                                             <pre style="font-size:0.75em; white-space:pre-wrap; word-wrap: break-word; margin: 0;"><?php
                                                 // Display raw JSON with proper formatting
                                                 $decoded_submission = json_decode((string)$raw_submission_data, true);
-                                                if ($decoded_submission !== null && json_last_error() === JSON_ERROR_NONE) {
-                                                    echo esc_html(json_encode($decoded_submission, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-                                                } else {
-                                                    echo esc_html($raw_submission_data);
-                                                }
-                                            ?></pre>
+                            if ($decoded_submission !== null && json_last_error() === JSON_ERROR_NONE) {
+                                echo esc_html(json_encode($decoded_submission, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+                            } else {
+                                echo esc_html($raw_submission_data);
+                            }
+                            ?></pre>
                                         </div>
                                         <div style="margin-top: 10px; display: flex; gap: 8px;">
                                             <button type="button" class="button button-primary" onclick="var d=<?php echo $raw_submission_data; ?>;navigator.clipboard.writeText(JSON.stringify(d,null,2)).then(()=>alert('Raw data copied!')).catch(()=>alert('Failed'))">📋 Copy Raw JSON</button>
