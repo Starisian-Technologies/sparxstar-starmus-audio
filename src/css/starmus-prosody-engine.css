@@ -59,6 +59,7 @@
     background: var(--prosody-bg-color);
     color: var(--prosody-text-dim);
     font-family: var(--prosody-font-stack);
+    height: 50vh;
     height: 50dvh;
     width: 100%;
     display: flex;
