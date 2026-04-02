@@ -428,13 +428,13 @@ try {
                                         <summary><strong>🗺️ AFTER SCHEMA MAPPER</strong> (<?php echo number_format(strlen((string)$mapped_submission_data)); ?> bytes)</summary>
                                         <div style="max-height: 600px; overflow: auto; background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 4px; margin-top: 10px; border: 2px solid #4CAF50;">
                                             <pre style="font-size:0.75em; white-space:pre-wrap; word-wrap: break-word; margin: 0;"><?php
-                            $decoded_mapped = json_decode((string)$mapped_submission_data, true);
-                            if ($decoded_mapped !== null && json_last_error() === JSON_ERROR_NONE) {
-                                echo esc_html(json_encode($decoded_mapped, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-                            } else {
-                                echo esc_html($mapped_submission_data);
-                            }
-                            ?></pre>
+                                                $decoded_mapped = json_decode((string)$mapped_submission_data, true);
+                                                if ($decoded_mapped !== null && json_last_error() === JSON_ERROR_NONE) {
+                                                    echo esc_html(json_encode($decoded_mapped, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+                                                } else {
+                                                    echo esc_html($mapped_submission_data);
+                                                }
+                                            ?></pre>
                                         </div>
                                         <div style="margin-top: 10px; display: flex; gap: 8px;">
                                             <button type="button" class="button button-secondary" onclick="var d=<?php echo $mapped_submission_data; ?>;navigator.clipboard.writeText(JSON.stringify(d,null,2)).then(()=>alert('Mapped data copied!')).catch(()=>alert('Failed'))">📋 Copy Mapped</button>
@@ -452,14 +452,14 @@ try {
                                         <summary>View Complete JSON (<?php echo number_format(strlen((string)$env_json_raw)); ?> bytes)</summary>
                                         <div style="max-height: 500px; overflow: auto; background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 4px; margin-top: 10px;">
                                             <pre style="font-size:0.75em; white-space:pre-wrap; word-wrap: break-word; margin: 0;"><?php
-                            // Pretty-print the full JSON for readability
-                            $decoded_env = json_decode((string)$env_json_raw);
-                            if ($decoded_env !== null) {
-                                echo esc_html(json_encode($decoded_env, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-                            } else {
-                                echo esc_html($env_json_raw);
-                            }
-                            ?></pre>
+                                                // Pretty-print the full JSON for readability
+                                                $decoded_env = json_decode((string)$env_json_raw);
+                                                if ($decoded_env !== null) {
+                                                    echo esc_html(json_encode($decoded_env, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+                                                } else {
+                                                    echo esc_html($env_json_raw);
+                                                }
+                                            ?></pre>
                                         </div>
                                         <div style="margin-top: 10px; display: flex; gap: 8px;">
                                             <button type="button" class="button button-secondary" onclick="var d=<?php echo $env_json_raw; ?>;navigator.clipboard.writeText(JSON.stringify(d,null,2)).then(()=>alert('Copied!')).catch(()=>alert('Failed'))">📋 Copy JSON</button>
