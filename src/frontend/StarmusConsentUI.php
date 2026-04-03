@@ -303,7 +303,7 @@ class StarmusConsentUI
 
     private function resolve_version(): string
     {
-        if (\defined('STARMUS_VERSION') && STARMUS_VERSION) {
+        if (\defined('STARMUS_VERSION')) {
             return (string) STARMUS_VERSION;
         }
 

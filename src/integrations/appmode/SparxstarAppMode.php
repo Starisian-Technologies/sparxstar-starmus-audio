@@ -154,7 +154,7 @@ final class SparxstarAppMode
             return;
         }
 
-        if (has_shortcode($post->post_content ?? '', 'sparxstar_app_mode')) {
+        if (has_shortcode($post->post_content, 'sparxstar_app_mode')) {
             $this->sparxstarEnqueueAssets();
         }
     }

@@ -100,13 +100,6 @@ add_action('init', function () {
 final class StarmusAudioRecorder
 {
     /**
-     * Plugin Version.
-     *
-     * @var string
-     */
-    private const VERSION              = STARMUS_VERSION;
-
-    /**
      * Minimum PHP Requirement.
      *
      * @var string
