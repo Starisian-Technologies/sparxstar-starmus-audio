@@ -136,8 +136,12 @@ class StarmusSchemaMapper
         'label_name' => 'sparx_sparxstar_label_name',
 
         // -- Transcription & Translation (§3.7) --
-        // starmus_transcription_text and starmus_translation_text are RETIRED.
-        // Text lives in post_content of sparx_aiwa_transcription / sparx_aiwa_translation post types.
+        // IMPORTANT: 'transcription' (plain text) is intentionally absent from this map.
+        // Per DVE Alignment v2.0 §3.7, transcription text is NOT a meta field — it lives in
+        // post_content of the sparx_aiwa_transcription post type. Any caller previously sending
+        // a 'transcription' key in form data must be updated to create/update the transcription
+        // post type via StarmusAudioDAL::create_transcription_post() instead. Passing
+        // 'transcription' here will silently drop the value. Same applies to 'translation'.
         'transcription_json' => 'sparx_sparxstar_transcription_json',
         'translation_language' => 'sparx_sparxstar_translation_language',
         'original_language' => 'sparx_sparxstar_original_language',
@@ -274,6 +278,13 @@ class StarmusSchemaMapper
     /**
      * Check if a specific field key should be treated as JSON.
      * References DVE canonical (sparx_sparxstar_* / sparx_aiwa_*) field names.
+     *
+     * NOTE: 'transcriber' does not follow the sparx_sparxstar_* convention because it is
+     * an internal calibration payload key used exclusively within this mapper's processing
+     * pipeline (mapped from _starmus_calibration in map_form_data). It is not an ACF field
+     * name or a DVE schema field — it never surfaces in REST responses or post meta under
+     * that key name. This is consistent with how sparx_tax_* taxonomy routing keys are
+     * handled: internal-only, not subject to the DVE canonical naming requirement.
      */
     public static function is_json_field(string $field_name): bool
     {
@@ -285,7 +296,7 @@ class StarmusSchemaMapper
             'sparx_sparxstar_school_reviewed',
             'sparx_sparxstar_parental_permission_slip',
             'sparx_sparxstar_contributor_verification',
-            'transcriber',
+            'transcriber', // Internal calibration payload — see docblock above.
         ], true);
     }
 
