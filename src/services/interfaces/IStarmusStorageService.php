@@ -22,8 +22,8 @@ interface IStarmusStorageService
     /**
      * Upload a local file to the configured storage bucket.
      *
-     * @param string $local_path  Absolute path to the local file.
-     * @param string $key         Object key (path) within the bucket.
+     * @param string $local_path Absolute path to the local file.
+     * @param string $key Object key (path) within the bucket.
      * @param string $content_type MIME type for the stored object.
      * @param array<string, string> $metadata Optional key-value metadata to attach.
      *
@@ -52,8 +52,8 @@ interface IStarmusStorageService
     /**
      * Generate a pre-signed URL for temporary access to an object.
      *
-     * @param string $key     Object key within the bucket.
-     * @param int    $expires Validity period in seconds (default: 3600).
+     * @param string $key Object key within the bucket.
+     * @param int $expires Validity period in seconds (default: 3600).
      *
      * @return string|null Pre-signed URL, or null if the provider does not support it.
      */

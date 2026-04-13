@@ -61,12 +61,12 @@ final class StarmusR2DirectService implements IStarmusStorageService
 
         try {
             $this->storage_client->putObject([
-                'Bucket'       => $this->bucket,
-                'Key'          => $key,
-                'Body'         => $handle,
-                'ContentType'  => $content_type,
+                'Bucket' => $this->bucket,
+                'Key' => $key,
+                'Body' => $handle,
+                'ContentType' => $content_type,
                 'CacheControl' => 'public, max-age=31536000',
-                'Metadata'     => $metadata,
+                'Metadata' => $metadata,
             ]);
 
             return trailingslashit($this->public_endpoint) . $key;
@@ -86,7 +86,7 @@ final class StarmusR2DirectService implements IStarmusStorageService
         try {
             $this->storage_client->deleteObject([
                 'Bucket' => $this->bucket,
-                'Key'    => $key,
+                'Key' => $key,
             ]);
             return true;
         } catch (Exception) {
@@ -113,7 +113,7 @@ final class StarmusR2DirectService implements IStarmusStorageService
     public function getPresignedUrl(string $key, int $expires = 3600): ?string
     {
         try {
-            $cmd     = $this->storage_client->getCommand('GetObject', ['Bucket' => $this->bucket, 'Key' => $key]);
+            $cmd = $this->storage_client->getCommand('GetObject', ['Bucket' => $this->bucket, 'Key' => $key]);
             $request = $this->storage_client->createPresignedRequest($cmd, '+' . $expires . ' seconds');
             return (string) $request->getUri();
         } catch (Exception) {
@@ -127,7 +127,7 @@ final class StarmusR2DirectService implements IStarmusStorageService
      * This is the authoritative web-optimized version path. Ref: Tech Spec v1.0 F-05.
      *
      * @param string $local_path Absolute path to the original audio file.
-     * @param int    $post_id    WordPress post ID for storage key namespacing.
+     * @param int $post_id WordPress post ID for storage key namespacing.
      *
      * @return array<string, mixed> Keyed by quality tier ('2g', '3g', 'wifi'), or ['message'] on skip.
      */
@@ -137,12 +137,12 @@ final class StarmusR2DirectService implements IStarmusStorageService
             return ['message' => 'No optimization needed'];
         }
 
-        $results   = [];
+        $results = [];
         $base_name = pathinfo($local_path, PATHINFO_FILENAME);
 
         $versions = [
-            '2g'   => ['-b:a', '32k', '-ar', '16000', '-ac', '1'],
-            '3g'   => ['-b:a', '48k', '-ar', '22050', '-ac', '1'],
+            '2g' => ['-b:a', '32k', '-ar', '16000', '-ac', '1'],
+            '3g' => ['-b:a', '48k', '-ar', '22050', '-ac', '1'],
             'wifi' => ['-b:a', '64k', '-ar', '44100', '-ac', '1'],
         ];
 
@@ -157,15 +157,15 @@ final class StarmusR2DirectService implements IStarmusStorageService
                     'audio/mpeg',
                     [
                         'starmus-optimized' => 'africa',
-                        'created'           => gmdate('c'),
+                        'created' => gmdate('c'),
                     ]
                 );
 
                 if ($url) {
                     $results[$quality] = [
-                        'url'     => $url,
+                        'url' => $url,
                         'size_mb' => round(filesize($temp_file) / (1024 * 1024), 2),
-                        'key'     => $key,
+                        'key' => $key,
                     ];
                 }
 
@@ -188,25 +188,25 @@ final class StarmusR2DirectService implements IStarmusStorageService
         $size_mb = filesize($file_path) / (1024 * 1024);
 
         return [
-            'original_mb'       => round($size_mb, 2),
-            'africa_2g_mb'      => round($size_mb * 0.15, 2),
-            'cost_savings_usd'  => round($size_mb * 0.13, 2),
+            'original_mb' => round($size_mb, 2),
+            'africa_2g_mb' => round($size_mb * 0.15, 2),
+            'cost_savings_usd' => round($size_mb * 0.13, 2),
             'bandwidth_savings' => '85%',
         ];
     }
 
     private function configureR2(): void
     {
-        $this->bucket          = \defined('STARMUS_R2_BUCKET') ? STARMUS_R2_BUCKET : 'starmus-audio';
-        $account_id            = \defined('STARMUS_R2_ACCOUNT_ID') ? STARMUS_R2_ACCOUNT_ID : '';
+        $this->bucket = \defined('STARMUS_R2_BUCKET') ? STARMUS_R2_BUCKET : 'starmus-audio';
+        $account_id = \defined('STARMUS_R2_ACCOUNT_ID') ? STARMUS_R2_ACCOUNT_ID : '';
         $this->public_endpoint = \defined('STARMUS_R2_ENDPOINT') ? STARMUS_R2_ENDPOINT : '';
 
         $this->storage_client = new S3Client([
-            'version'                 => 'latest',
-            'region'                  => 'auto',
-            'endpoint'                => \sprintf('https://%s.r2.cloudflarestorage.com', $account_id),
-            'credentials'             => [
-                'key'    => \defined('STARMUS_R2_ACCESS_KEY') ? STARMUS_R2_ACCESS_KEY : '',
+            'version' => 'latest',
+            'region' => 'auto',
+            'endpoint' => \sprintf('https://%s.r2.cloudflarestorage.com', $account_id),
+            'credentials' => [
+                'key' => \defined('STARMUS_R2_ACCESS_KEY') ? STARMUS_R2_ACCESS_KEY : '',
                 'secret' => \defined('STARMUS_R2_SECRET_KEY') ? STARMUS_R2_SECRET_KEY : '',
             ],
             'use_path_style_endpoint' => true,
@@ -215,18 +215,18 @@ final class StarmusR2DirectService implements IStarmusStorageService
 
     private function configureAws(): void
     {
-        $this->bucket  = \defined('STARMUS_S3_BUCKET') ? STARMUS_S3_BUCKET : '';
-        $region        = \defined('STARMUS_S3_REGION') ? STARMUS_S3_REGION : 'us-east-1';
+        $this->bucket = \defined('STARMUS_S3_BUCKET') ? STARMUS_S3_BUCKET : '';
+        $region = \defined('STARMUS_S3_REGION') ? STARMUS_S3_REGION : 'us-east-1';
 
         $this->public_endpoint = \defined('STARMUS_S3_ENDPOINT')
             ? STARMUS_S3_ENDPOINT
             : \sprintf('https://%s.s3.%s.amazonaws.com/', $this->bucket, $region);
 
         $this->storage_client = new S3Client([
-            'version'     => 'latest',
-            'region'      => $region,
+            'version' => 'latest',
+            'region' => $region,
             'credentials' => [
-                'key'    => \defined('STARMUS_S3_ACCESS_KEY') ? STARMUS_S3_ACCESS_KEY : '',
+                'key' => \defined('STARMUS_S3_ACCESS_KEY') ? STARMUS_S3_ACCESS_KEY : '',
                 'secret' => \defined('STARMUS_S3_SECRET_KEY') ? STARMUS_S3_SECRET_KEY : '',
             ],
         ]);

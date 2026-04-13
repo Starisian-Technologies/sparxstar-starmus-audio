@@ -631,13 +631,18 @@ function initRecorder(store, instanceId) {
 
             // Max-duration hard stop. Limits by bootstrap mode per CS §4.1. Ref: Tech Spec v1.0 F-04.
             // production: 120 s | development: 180 s | draft: 300 s
-            const bootstrapMode = (window.STARMUS_BOOTSTRAP && window.STARMUS_BOOTSTRAP.mode) || "production";
+            const bootstrapMode =
+                (window.STARMUS_BOOTSTRAP && window.STARMUS_BOOTSTRAP.mode) || "production";
             const MAX_DURATIONS = { production: 120000, development: 180000, draft: 300000 };
             const maxRecordingMs = MAX_DURATIONS[bootstrapMode] || MAX_DURATIONS.production;
             const durationTimer = setTimeout(() => {
                 const rec = recorderRegistry.get(instanceId);
                 if (rec && rec.mediaRecorder && rec.mediaRecorder.state === "recording") {
-                    console.warn("[Recorder] Max duration reached (" + (maxRecordingMs / 1000) + "s). Stopping.");
+                    console.warn(
+                        "[Recorder] Max duration reached (" +
+                            maxRecordingMs / 1000 +
+                            "s). Stopping.",
+                    );
                     rec.mediaRecorder.stop();
                     store.dispatch({
                         type: "starmus/max-duration-reached",
@@ -646,7 +651,12 @@ function initRecorder(store, instanceId) {
                 }
             }, maxRecordingMs);
             // Store timer reference so stop-mic can clear it
-            recorderRegistry.set(instanceId, { mediaRecorder, rafId: null, signalAnalyzer, durationTimer });
+            recorderRegistry.set(instanceId, {
+                mediaRecorder,
+                rafId: null,
+                signalAnalyzer,
+                durationTimer,
+            });
 
             // Amplitude visualization setup
             const analyser = ctx.createAnalyser();
