@@ -147,6 +147,9 @@ class StarmusConsentUI
         // 6. Create/Update Contributor + Consent Recording (Atomic)
         $recording_id = 0;
 
+        // Intentional raw transaction queries: START TRANSACTION / COMMIT / ROLLBACK carry no
+        // user-supplied data, so WPDB prepared statement pattern is not applicable here.
+        // Ref: Tech Spec v1.0 F-12.
         $wpdb->query('START TRANSACTION');
 
         try {

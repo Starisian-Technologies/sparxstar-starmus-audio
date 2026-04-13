@@ -6,6 +6,7 @@ namespace Starisian\Sparxstar\Starmus\services;
 use Aws\S3\S3Client;
 use Exception;
 use Starisian\Sparxstar\Starmus\helpers\StarmusLogger;
+use Starisian\Sparxstar\Starmus\services\interfaces\IStarmusStorageService;
 use Throwable;
 
 if ( ! \defined('ABSPATH')) {
@@ -13,13 +14,14 @@ if ( ! \defined('ABSPATH')) {
 }
 
 /**
- * Direct S3-Compatible (R2/AWS) Audio Service
+ * S3-Compatible Storage Service (Cloudflare R2 / AWS S3)
  *
- * Minimal SDK-based S3/R2 control for bandwidth optimization versions.
- * Bypasses WordPress plugins for direct storage management of optimized assets.
- * Supports both Cloudflare R2 (primary) and AWS S3 (backup/alternative).
+ * Implements IStarmusStorageService against the AWS S3 SDK.
+ * Application code must depend on IStarmusStorageService — never this concrete class.
+ * Provider selected by STARMUS_STORAGE_PROVIDER constant ("r2" or "aws").
+ * Ref: Tech Spec v1.0 F-02, CS §0.7.
  */
-final class StarmusR2DirectService
+final class StarmusR2DirectService implements IStarmusStorageService
 {
     private S3Client $storage_client;
 
@@ -34,8 +36,7 @@ final class StarmusR2DirectService
         try {
             $this->id3_service = $id3_service;
 
-            // Detect Provider: Defaults to R2, checks for S3 override
-            $provider = \defined('STARMUS_STORAGE_PROVIDER') ? STARMUS_STORAGE_PROVIDER : 'r2'; // 'r2' or 'aws'
+            $provider = \defined('STARMUS_STORAGE_PROVIDER') ? STARMUS_STORAGE_PROVIDER : 'r2';
 
             if ($provider === 'aws') {
                 $this->configureAws();
@@ -47,47 +48,88 @@ final class StarmusR2DirectService
         }
     }
 
-    private function configureR2(): void
+    /**
+     * {@inheritdoc}
+     */
+    public function upload(string $local_path, string $key, string $content_type, array $metadata = []): ?string
     {
-        $this->bucket = \defined('STARMUS_R2_BUCKET') ? STARMUS_R2_BUCKET : 'starmus-audio';
-        $account_id = \defined('STARMUS_R2_ACCOUNT_ID') ? STARMUS_R2_ACCOUNT_ID : '';
+        $handle = fopen($local_path, 'rb');
+        if ($handle === false) {
+            StarmusLogger::error('Storage upload failed: cannot open file', ['key' => $key]);
+            return null;
+        }
 
-        $this->public_endpoint = \defined('STARMUS_R2_ENDPOINT') ? STARMUS_R2_ENDPOINT : '';
+        try {
+            $this->storage_client->putObject([
+                'Bucket'       => $this->bucket,
+                'Key'          => $key,
+                'Body'         => $handle,
+                'ContentType'  => $content_type,
+                'CacheControl' => 'public, max-age=31536000',
+                'Metadata'     => $metadata,
+            ]);
 
-        $this->storage_client = new S3Client([
-            'version' => 'latest',
-            'region' => 'auto',
-            'endpoint' => \sprintf('https://%s.r2.cloudflarestorage.com', $account_id),
-            'credentials' => [
-                'key' => \defined('STARMUS_R2_ACCESS_KEY') ? STARMUS_R2_ACCESS_KEY : '',
-                'secret' => \defined('STARMUS_R2_SECRET_KEY') ? STARMUS_R2_SECRET_KEY : '',
-            ],
-            'use_path_style_endpoint' => true,
-        ]);
-    }
-
-    private function configureAws(): void
-    {
-        $this->bucket = \defined('STARMUS_S3_BUCKET') ? STARMUS_S3_BUCKET : '';
-        $region = \defined('STARMUS_S3_REGION') ? STARMUS_S3_REGION : 'us-east-1';
-
-        // AWS Public Endpoint construction or Custom Domain
-        $this->public_endpoint = \defined('STARMUS_S3_ENDPOINT')
-            ? STARMUS_S3_ENDPOINT
-            : \sprintf('https://%s.s3.%s.amazonaws.com/', $this->bucket, $region);
-
-        $this->storage_client = new S3Client([
-            'version' => 'latest',
-            'region' => $region,
-            'credentials' => [
-                'key' => \defined('STARMUS_S3_ACCESS_KEY') ? STARMUS_S3_ACCESS_KEY : '',
-                'secret' => \defined('STARMUS_S3_SECRET_KEY') ? STARMUS_S3_SECRET_KEY : '',
-            ],
-        ]);
+            return trailingslashit($this->public_endpoint) . $key;
+        } catch (Exception) {
+            StarmusLogger::error('Storage upload failed', ['key' => $key]);
+            return null;
+        } finally {
+            fclose($handle);
+        }
     }
 
     /**
-     * Process audio for African networks with direct Storage control
+     * {@inheritdoc}
+     */
+    public function delete(string $key): bool
+    {
+        try {
+            $this->storage_client->deleteObject([
+                'Bucket' => $this->bucket,
+                'Key'    => $key,
+            ]);
+            return true;
+        } catch (Exception) {
+            StarmusLogger::error('Storage delete failed', ['key' => $key]);
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function exists(string $key): bool
+    {
+        try {
+            return $this->storage_client->doesObjectExistV2($this->bucket, $key);
+        } catch (Exception) {
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPresignedUrl(string $key, int $expires = 3600): ?string
+    {
+        try {
+            $cmd     = $this->storage_client->getCommand('GetObject', ['Bucket' => $this->bucket, 'Key' => $key]);
+            $request = $this->storage_client->createPresignedRequest($cmd, '+' . $expires . ' seconds');
+            return (string) $request->getUri();
+        } catch (Exception) {
+            StarmusLogger::error('Presigned URL generation failed', ['key' => $key]);
+            return null;
+        }
+    }
+
+    /**
+     * Process audio for African networks — generates bandwidth-tiered versions and uploads them.
+     * This is the authoritative web-optimized version path. Ref: Tech Spec v1.0 F-05.
+     *
+     * @param string $local_path Absolute path to the original audio file.
+     * @param int    $post_id    WordPress post ID for storage key namespacing.
+     *
+     * @return array<string, mixed> Keyed by quality tier ('2g', '3g', 'wifi'), or ['message'] on skip.
      */
     public function processAfricaAudio(string $local_path, int $post_id): array
     {
@@ -95,13 +137,12 @@ final class StarmusR2DirectService
             return ['message' => 'No optimization needed'];
         }
 
-        $results = [];
+        $results   = [];
         $base_name = pathinfo($local_path, PATHINFO_FILENAME);
 
-        // Create optimized versions
         $versions = [
-            '2g' => ['-b:a', '32k', '-ar', '16000', '-ac', '1'],
-            '3g' => ['-b:a', '48k', '-ar', '22050', '-ac', '1'],
+            '2g'   => ['-b:a', '32k', '-ar', '16000', '-ac', '1'],
+            '3g'   => ['-b:a', '48k', '-ar', '22050', '-ac', '1'],
             'wifi' => ['-b:a', '64k', '-ar', '44100', '-ac', '1'],
         ];
 
@@ -109,15 +150,22 @@ final class StarmusR2DirectService
             $temp_file = $this->createOptimizedVersion($local_path, $params);
 
             if ($temp_file) {
-                // Upload directly to Storage (R2/S3)
                 $key = \sprintf('audio/%d/%s_%s.mp3', $post_id, $base_name, $quality);
-                $url = $this->uploadToStorage($temp_file, $key);
+                $url = $this->upload(
+                    $temp_file,
+                    $key,
+                    'audio/mpeg',
+                    [
+                        'starmus-optimized' => 'africa',
+                        'created'           => gmdate('c'),
+                    ]
+                );
 
                 if ($url) {
                     $results[$quality] = [
-                        'url' => $url,
+                        'url'     => $url,
                         'size_mb' => round(filesize($temp_file) / (1024 * 1024), 2),
-                        'key' => $key,
+                        'key'     => $key,
                     ];
                 }
 
@@ -129,8 +177,61 @@ final class StarmusR2DirectService
     }
 
     /**
-     * Create optimized audio version
+     * Get bandwidth estimates for Africa.
+     *
+     * @param string $file_path Absolute path to the audio file.
+     *
+     * @return array<string, mixed>
      */
+    public function getAfricaEstimates(string $file_path): array
+    {
+        $size_mb = filesize($file_path) / (1024 * 1024);
+
+        return [
+            'original_mb'       => round($size_mb, 2),
+            'africa_2g_mb'      => round($size_mb * 0.15, 2),
+            'cost_savings_usd'  => round($size_mb * 0.13, 2),
+            'bandwidth_savings' => '85%',
+        ];
+    }
+
+    private function configureR2(): void
+    {
+        $this->bucket          = \defined('STARMUS_R2_BUCKET') ? STARMUS_R2_BUCKET : 'starmus-audio';
+        $account_id            = \defined('STARMUS_R2_ACCOUNT_ID') ? STARMUS_R2_ACCOUNT_ID : '';
+        $this->public_endpoint = \defined('STARMUS_R2_ENDPOINT') ? STARMUS_R2_ENDPOINT : '';
+
+        $this->storage_client = new S3Client([
+            'version'                 => 'latest',
+            'region'                  => 'auto',
+            'endpoint'                => \sprintf('https://%s.r2.cloudflarestorage.com', $account_id),
+            'credentials'             => [
+                'key'    => \defined('STARMUS_R2_ACCESS_KEY') ? STARMUS_R2_ACCESS_KEY : '',
+                'secret' => \defined('STARMUS_R2_SECRET_KEY') ? STARMUS_R2_SECRET_KEY : '',
+            ],
+            'use_path_style_endpoint' => true,
+        ]);
+    }
+
+    private function configureAws(): void
+    {
+        $this->bucket  = \defined('STARMUS_S3_BUCKET') ? STARMUS_S3_BUCKET : '';
+        $region        = \defined('STARMUS_S3_REGION') ? STARMUS_S3_REGION : 'us-east-1';
+
+        $this->public_endpoint = \defined('STARMUS_S3_ENDPOINT')
+            ? STARMUS_S3_ENDPOINT
+            : \sprintf('https://%s.s3.%s.amazonaws.com/', $this->bucket, $region);
+
+        $this->storage_client = new S3Client([
+            'version'     => 'latest',
+            'region'      => $region,
+            'credentials' => [
+                'key'    => \defined('STARMUS_S3_ACCESS_KEY') ? STARMUS_S3_ACCESS_KEY : '',
+                'secret' => \defined('STARMUS_S3_SECRET_KEY') ? STARMUS_S3_SECRET_KEY : '',
+            ],
+        ]);
+    }
+
     private function createOptimizedVersion(string $input, array $params): ?string
     {
         $temp_file = tempnam(sys_get_temp_dir(), 'starmus_africa_') . '.mp3';
@@ -147,7 +248,6 @@ final class StarmusR2DirectService
         exec($cmd, $output, $code);
 
         if ($code === 0 && file_exists($temp_file)) {
-            // Copy metadata
             $this->copyMetadata($input, $temp_file);
             return $temp_file;
         }
@@ -155,40 +255,6 @@ final class StarmusR2DirectService
         return null;
     }
 
-    /**
-     * Upload file directly to Cloudflare R2 or AWS S3
-     */
-    private function uploadToStorage(string $file_path, string $key): ?string
-    {
-        try {
-            $result = $this->storage_client->putObject(
-                [
-                    'Bucket' => $this->bucket,
-                    'Key' => $key,
-                    'Body' => fopen($file_path, 'rb'),
-                    'ContentType' => 'audio/mpeg',
-                    'CacheControl' => 'public, max-age=31536000', // 1 year cache
-                    'Metadata' => [
-                        'starmus-optimized' => 'africa',
-                        'created' => date('c'),
-                    ],
-                ]
-            );
-
-            // Return public URL based on provider configuration
-            return trailingslashit($this->public_endpoint) . $key;
-        } catch (Exception) {
-            StarmusLogger::error(
-                'Upload failed',
-                ['component' => self::class, 'key' => $key]
-            );
-            return null;
-        }
-    }
-
-    /**
-     * Copy metadata using getID3
-     */
     private function copyMetadata(string $source, string $destination): void
     {
         try {
@@ -208,20 +274,5 @@ final class StarmusR2DirectService
         } catch (Throwable $throwable) {
             StarmusLogger::log($throwable);
         }
-    }
-
-    /**
-     * Get bandwidth estimates for Africa
-     */
-    public function getAfricaEstimates(string $file_path): array
-    {
-        $size_mb = filesize($file_path) / (1024 * 1024);
-
-        return [
-            'original_mb' => round($size_mb, 2),
-            'africa_2g_mb' => round($size_mb * 0.15, 2), // 85% reduction
-            'cost_savings_usd' => round($size_mb * 0.13, 2), // Gambia rates
-            'bandwidth_savings' => '85%',
-        ];
     }
 }

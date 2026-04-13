@@ -2,7 +2,9 @@
 
 # Sparxstar Starmus Audio
 
-A mobile-first audio recording and annotation plugin for WordPress, designed for low-bandwidth environments and legacy device compatibility.
+**Frontline audio acquisition for the SPARXSTAR platform — built for Africa.**
+
+A mobile-first, offline-capable WordPress plugin that captures audio, enforces contributor consent, normalises metadata to the DVE schema, and produces certified artifacts for the AiWA corpus.  Primary deployment target: 2G/3G networks and low-end Android devices in West Africa (The Gambia and surrounding regions).
 
 ---
 
@@ -10,7 +12,7 @@ A mobile-first audio recording and annotation plugin for WordPress, designed for
 
 **Contributors:** Starisian Technologies, Max Barrett
 
-**Tags:** WordPress, Audio, Web Audio API, recorder, offline, tus, resumable
+**Tags:** WordPress, Audio, Web Audio API, recorder, offline, tus, resumable, africa, gambia, oral-history
 
 **Requires at least:** 6.8
 
@@ -20,7 +22,7 @@ A mobile-first audio recording and annotation plugin for WordPress, designed for
 
 **Stable tag:** v0.9.2
 
-**License:** Starisian Technologies Proprietary License (STPD) See LICENSE.md
+**License:** Starisian Technologies Proprietary License (STPD) — See LICENSE.md
 
 **Copyright:** Copyright (c) 2025-2026 Starisian Technologies. All rights reserved.
 
@@ -28,50 +30,90 @@ A mobile-first audio recording and annotation plugin for WordPress, designed for
 
 [![Security Checks](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/security.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/security.yml) [![Proof HTML, Lint JS & CSS](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/proof-html-js-css.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/proof-html-js-css.yml) [![Release Code Quality Final Review](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/release.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/release.yml) [![Generate Documentation](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/docs.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/actions/workflows/docs.yml)
 
+---
 
-The Sparxstar Starmus Audio plugin is a comprehensive WordPress solution for capturing, managing, and annotating user-submitted audio. Its standout feature is a resilient, offline-first submission system, ensuring recordings are never lost, even on unstable networks.
+## 🌍 Mission
 
-The plugin is built with a modern, modular architecture that intelligently provides advanced features like microphone calibration and speech-to-text to capable browsers, while offering a robust fallback experience for older devices.
+Starmus is the **frontline acquisition layer** of the SPARXSTAR platform.  Its sole function is to capture audio, enforce contributor consent, normalise metadata to the DVE (Digital Village Elder) schema, and produce certified artifacts that graduate into the AiWA corpus.  No data flows into AiWA until Starmus certifies it.
 
-Named after the iconic Starmus Festival, where rock legends and astrophysicists share the stage, this tool is built for creators and communities who believe voice has gravity.
+Starmus operates at **Briefcase level (Layer 1)** — group-level acquisition governed by community sovereignty.  It is a data intake system, not a storage system, not a governance system, and not an AI system.
+
+**Design constraints that are non-negotiable:**
+
+- Audio must be capturable on low-end Android (2GB RAM, Android 8+) on a 2G connection.
+- Recordings must never be lost — not on network failure, not on browser crash.
+- Consent is a forensic declaration that travels with the asset, not a checkbox.
+- Offline is a required operational state, not an edge case.
 
 ---
 
 ## ✨ Key Features
 
-- **Mobile-First, Two-Step UI:** A clean, accessible interface that separates metadata entry from the recording process for a focused user experience.
-- **Resumable Uploads:** Powered by the `tus.io` protocol, audio uploads in small chunks and automatically resumes after network interruptions.
-- **Offline Submission Queue:** Failed or offline submissions are saved securely in the user’s browser (via IndexedDB) and are automatically uploaded when connectivity is restored.
+- **Mobile-First, Two-Step UI:** Clean, accessible interface separating metadata entry from recording, optimised for small screens and limited bandwidth.
+- **Resumable Uploads (TUS):** Powered by the `tus.io` protocol — uploads in small chunks and auto-resumes after network interruptions, including complete browser close and reopen.
+- **Offline Submission Queue:** Failed or offline submissions are saved in IndexedDB and automatically uploaded when connectivity returns.  Critical data is never stored in `localStorage`.
+- **Africa-Optimised Audio Pipeline:** Generates bandwidth-tiered versions (2G / 3G / WiFi) via FFmpeg and stores them to Cloudflare R2 for edge delivery close to the contributor.
+- **Max Recording Duration Enforcement:** Hard-stops at 120 s (production), 180 s (development), or 300 s (draft) at the capture module level — not just the UI.
 - **Progressive Enhancement:**
-    - **Tier A (Modern Browsers):** Offers microphone calibration (gain control), noise suppression, and real-time speech-to-text transcription via the Speech Recognition API.
-    - **Tier B/C (Legacy Browsers):** Gracefully degrades, providing a simpler recording experience or a file upload fallback to ensure 100% user compatibility.
-- **Rich Metadata & Consent Capture:** Saves extensive session data, including a linked consent-agreement post, User ID, IP, and User Agent.
-- **Geolocation Capture:** The legacy fallback script captures GPS coordinates, ideal for dialect and linguistic mapping projects.
-- **Audio Annotation Editor:** A separate `[starmus_audio_editor]` shortcode powered by Peaks.js allows for detailed audio segmentation and labeling.
-- **Developer Extensibility:** A rich set of WordPress hooks allows for deep customization without altering core plugin files.
+    - **Tier A (Modern Browsers):** Microphone calibration, noise suppression, real-time speech signal analysis.
+    - **Tier B/C (Legacy / Low-End):** Graceful degradation to a simpler recording experience or base64 file-upload fallback.
+- **DVE Schema Alignment:** All field names follow the canonical DVE schema (`sparx_sparxstar_*` / `sparx_aiwa_*` prefixes).  See [DVE Schema Alignment v2.0](Starmus_DVE_Alignment_v2.0.pdf).
+- **Forensic Consent Records:** Consent is captured as a signatory block (name, IP, UA, geolocation, timestamp) — attributable, non-repudiable, and attached to the asset permanently.
+- **Audio Annotation Editor:** `[starmus_audio_editor]` shortcode powered by Peaks.js for segment labelling and transcript sync.
+
+---
 
 ## 📦 Requirements
 
-- **WordPress:** 6.8 or higher
-- **PHP:** 8.2 or higher
-- **Server:**
-    - A `tus.io` compatible server endpoint is **highly recommended** for resumable uploads. The plugin includes a fallback to the standard WordPress REST API.
-    - The `audiowaveform` binary is required on the server's PATH for waveform generation in the editor.
-- **Browser:** A modern browser supporting the MediaRecorder API is recommended for the best experience. A fallback is provided for older browsers.
+| Requirement | Minimum |
+|---|---|
+| WordPress | 6.8 |
+| PHP | 8.2 (strict types) |
+| Database | MariaDB / MySQL (via WordPress) |
+| Storage | Cloudflare R2 (primary) or AWS S3 (backup) |
+| Server binary | `ffmpeg` on PATH for audio optimisation |
+| Server binary | `audiowaveform` on PATH for editor waveform generation |
+| TUS daemon | `tusd` endpoint recommended for resumable uploads |
+| Browser (optimal) | Chrome / Firefox / Edge with MediaRecorder API |
+| Browser (fallback) | Any browser supporting `<input type="file">` |
+
+---
 
 ## 🚀 Installation
 
-1. Download the latest release `.zip` file from this repository.
-2. In your WordPress Admin, go to **Plugins → Add New → Upload Plugin**.
-3. Upload the `.zip` file and click **Install Now**.
-4. Activate the plugin.
-5. (Optional but Recommended) Set up a `tusd` server endpoint and configure the URL in `StarmusAudioRecorderUI.php`.
+1. Download the latest release `.zip` from this repository.
+2. In WordPress Admin: **Plugins → Add New → Upload Plugin**.
+3. Upload the `.zip` and click **Install Now**, then **Activate**.
+4. Configure storage credentials (R2 or S3) in the plugin settings or via `wp-config.php` constants.
+5. (Recommended) Deploy a `tusd` server and set the endpoint in plugin settings.
+
+### Configuration Constants
+
+```php
+// wp-config.php
+define('STARMUS_STORAGE_PROVIDER', 'r2'); // 'r2' or 'aws'
+
+// Cloudflare R2
+define('STARMUS_R2_ACCOUNT_ID', '...');
+define('STARMUS_R2_BUCKET', 'starmus-audio');
+define('STARMUS_R2_ACCESS_KEY', '...');
+define('STARMUS_R2_SECRET_KEY', '...');
+define('STARMUS_R2_ENDPOINT', 'https://pub.your-r2-custom-domain.com');
+
+// AWS S3 (alternative)
+define('STARMUS_S3_BUCKET', '...');
+define('STARMUS_S3_REGION', 'us-east-1');
+define('STARMUS_S3_ACCESS_KEY', '...');
+define('STARMUS_S3_SECRET_KEY', '...');
+```
+
+---
 
 ## 🖥 Usage
 
 The plugin provides three primary shortcodes:
 
-#### 1. Audio Recorder
+### 1. Audio Recorder
 
 Displays the two-step recording form.
 
@@ -79,17 +121,17 @@ Displays the two-step recording form.
 [starmus_audio_recorder_form]
 ```
 
-#### 2. User’s Recordings List
+### 2. User's Recordings List
 
-Displays a paginated, accessible list of the logged-in user's submissions.
+Displays a paginated list of the logged-in user's submissions.
 
 ```php
 [starmus_my_recordings]
 ```
 
-#### 3. Audio Editor
+### 3. Audio Editor
 
-Displays the Peaks.js annotation editor. This page must be accessed via a secure link containing a `post_id` and a nonce, typically generated from the "My Recordings" list.
+Displays the Peaks.js annotation editor.  Must be accessed via a secure link containing `post_id` and a nonce, typically generated from the "My Recordings" list.
 
 ```php
 [starmus_audio_editor]
@@ -97,160 +139,225 @@ Displays the Peaks.js annotation editor. This page must be accessed via a secure
 
 Example URL: `https://yoursite.com/edit-recording/?post_id=123&nonce=...`
 
-## For Developers: Architecture & Extensibility
+---
 
-- **StarmusPlugin** – main plugin controller
-- **StarmusAudioRecorderUI** – manages recording form, chunked uploads, metadata, and redirects
-- **StarmusAudioEditorUI** – manages the annotation editor and REST API
+## 🏗 Architecture
 
-### Custom Post Types & Taxonomies
+### Platform Role
 
-- **CPTs:**
-    - `audio-recording`
-    - `consent-agreement`
-- **Taxonomies:**
-    - `language`
-    - `recording_type`
+```
+Contributor
+    ↓
+WordPress Page (Bootstrap injected by PHP before any JS runs)
+    ↓
+UI Controller (step 1 validation, metadata)
+    ↓
+Recorder Engine (MediaRecorder, gain, signal analysis)
+    ↓
+Submissions Handler (TUS or fallback, IndexedDB offline queue)
+    ↓
+WordPress REST API  (/wp-json/star/v1/upload-chunk etc.)
+    ↓
+StarmusRESTHandler → StarmusSubmissionHandler → StarmusAudioDAL
+    ↓
+MariaDB + Cloudflare R2 storage
+    ↓
+Post-Processing Queue → AiWA corpus (after transcript approval)
+```
 
-### Core JavaScript Architecture
+### Layer Map
 
-The plugin uses a four-part modular architecture for its front-end application:
+| Layer | Path | Responsibility |
+|---|---|---|
+| Entry | `starmus-audio-recorder.php`, `src/StarmusAudioRecorder.php` | Bootstrap, hook registration |
+| API | `src/api/` | REST endpoints: `upload-chunk`, `upload-fallback`, `upload-chunk-legacy`, `status` |
+| Core | `src/core/` | Submission, consent, post type registration, settings, asset loader |
+| Data | `src/data/` | DAL, base DAL, prosody DAL, schema mapper, job repositories |
+| Services | `src/services/` | Audio pipeline, FFmpeg, ID3, waveform, R2/S3 storage (`IStarmusStorageService`), bandwidth detection |
+| Frontend (PHP) | `src/frontend/` | Recorder UI, editor UI, re-recorder UI, consent UI, shortcode loader |
+| JavaScript | `src/js/` | Recorder, TUS upload, state store, UI, offline queue, SPARXSTAR integration, transcript controller |
+| Admin | `src/admin/` | Admin panel, SageMaker job queue, task manager |
+| Integrations | `src/integrations/` | HuggingFace, SageMaker, app-mode bridge |
+| Schema | `acf-json/` | ACF/SCF field definitions aligned to DVE canonical schema |
+| Templates | `src/templates/` | Recorder, editor, re-recorder, consent form, recording detail, my-recordings |
+| i18n | `src/i18n/`, `languages/` | Internationalisation, POT files |
+| Tests | `tests/` | PHPUnit (unit + integration), Playwright (E2E), JS (metadata schema) |
 
-1. **`starmus-audio-recorder-module.js` (The Engine):** A secure, modern recording engine using `MediaRecorder`. It handles mic access, calibration, and speech recognition. It has no knowledge of the UI or uploads.
-2. **`starmus-audio-recorder-submissions-handler.js` (The Uploader):** The submission specialist. It manages the `tus.io` resumable uploads, the offline IndexedDB queue, and the fallback to the WordPress REST API.
-3. **`starmus-audio-recorder-ui-controller.js` (The UI Controller):** The "glue" for modern browsers. It manages the two-step UI, validates form fields, and delegates tasks to the Engine and Uploader modules.
-4. **`starmus-audio-recorder-submissions.js` (The Legacy Fallback):** A self-contained script loaded by older browsers (`nomodule`). It provides polyfills and a simpler submission process, including geolocation capture.
+### Bootstrap Contract
 
-### Third-Party Libraries
+PHP **must** inject the following object before any JS bundle executes:
 
-This plugin relies on the following excellent open-source libraries, which should be installed via `npm` and included in the `/vendor/js/` directory:
+```js
+window.STARMUS_BOOTSTRAP = {
+    pageType: "recorder" | "rerecorder" | "editor",
+    postId: number | null,
+    restUrl: string,
+    mode: "draft" | "development" | "production",
+    canCommit: boolean,
+    transcript: array | null,
+    audioUrl: string | null
+}
+```
 
-- **tus-js-client:** For resumable file uploads.
-- **Peaks.js:** For the audio annotation editor.
+JS modules refuse to initialise without this object.  No alternate bootstrap path is permitted.
 
-### Core Hooks
+### DVE Schema Alignment
 
-The Sparxstar Starmus Audio is a lightweight, front-end WordPress plugin that allows users to record audio directly in the browser using the MediaRecorder API.
+All metadata fields follow the **DVE (Digital Village Elder) canonical schema**.  Field names use the `sparx_sparxstar_*` (platform fields) and `sparx_aiwa_*` (AiWA corpus fields) prefixes throughout the codebase, SchemaMapper, ACF JSON, and REST responses.
 
-- **`starmus_before_recorder_render` (Action)**
-  Fires before recorder form displays.
-  _Example: Redirect if profile is incomplete._
+Reference: [Starmus_DVE_Alignment_v2.0.pdf](Starmus_DVE_Alignment_v2.0.pdf)
+
+---
+
+## 📐 Custom Post Types & Taxonomies
+
+| Type | Handle | Purpose |
+|---|---|---|
+| CPT | `audio-recording` | Primary audio artifact |
+| CPT | `consent-agreement` | Forensic consent declaration |
+| Taxonomy | `language` | Language / dialect of the recording |
+| Taxonomy | `recording_type` | Classification (oral history, song, narrative, …) |
+
+---
+
+## 🔧 Core Hooks
+
+### Actions
+
+**`starmus_before_recorder_render`** — Fires before the recorder form renders.
 
 ```php
-  add_action('starmus_before_recorder_render', function() {
-    if (!is_user_logged_in()) return;
-    $first_name = get_user_meta(get_current_user_id(), 'first_name', true);
-    if (empty($first_name)) {
-        wp_safe_redirect(home_url('/edit-profile/?notice=incomplete'));
-        exit;
-    }
+add_action('starmus_before_recorder_render', function() {
+    if (!is_user_logged_in()) wp_safe_redirect(wp_login_url()); exit;
 });
 ```
 
-- **`starmus_after_audio_upload` (Action)**
-  Fires after recording + metadata saved.
-  _Example: Send an email to the admin._
+**`starmus_after_audio_upload`** — Fires after recording and metadata are saved.
 
 ```php
 add_action('starmus_after_audio_upload', function($audio_post_id, $attachment_id, $form_data) {
-    $title = get_the_title($audio_post_id);
-    wp_mail(
-        get_option('admin_email'),
-        "New Audio Submission: {$title}",
-        "A new recording has been submitted. View it here: " . get_edit_post_link($audio_post_id)
-    );
+    wp_mail(get_option('admin_email'), 'New submission', get_permalink($audio_post_id));
 }, 10, 3);
 ```
 
-- **`starmus_audio_upload_success_response` (Filter)**
-  Modify JSON response.
-  _Example: add conditional redirect._
+**`starmus_before_editor_render`** — Fires before the editor loads.
+
+**`starmus_before_annotations_save`** — Fires via REST before annotations are saved.
+
+**`starmus_after_annotations_save`** — Fires after annotations are saved.
+
+### Filters
+
+**`starmus_audio_upload_success_response`** — Modify the JSON success response.
 
 ```php
-  add_filter('starmus_audio_upload_success_response', function($response, $post_id, $form_data) {
+add_filter('starmus_audio_upload_success_response', function($response, $post_id, $form_data) {
     if (isset($form_data['recording_type']) && 'oral-history' === $form_data['recording_type']) {
-        $response['redirect_url'] = home_url("/add-oral-history-details/?recording_id={$post_id}");
+        $response['redirect_url'] = home_url('/add-details/?id=' . $post_id);
     }
     return $response;
 }, 10, 3);
 ```
 
-### Audio Editor Hooks
-
-- **`starmus_before_editor_render` (Action)** – Before the editor loads
-- **`starmus_editor_template` (Filter)** – Override the editor template
-- **`starmus_before_annotations_save` (Action)** – Fires via REST before annotations are saved
-- **`starmus_after_annotations_save` (Action)** – Fires after annotations saved
+**`starmus_editor_template`** — Override the editor template path.
 
 ---
 
-## Development Setup
+## 🛡 Security
 
-Composer-based tools require a GitHub token for certain dependencies. Copy `auth.json.example` to `auth.json` and replace `YOUR_GITHUB_TOKEN_HERE` with your personal access token. Alternatively, set the `COMPOSER_AUTH` environment variable.
+- All REST write endpoints require `upload_files` capability.
+- Nonce validation on all form submissions.
+- Path traversal protection on uploaded files.
+- MIME type and extension allowlist: `audio/webm`, `audio/ogg`, `audio/mpeg`, `audio/wav`, `audio/mp4`.
+- Consent is a server-side forensic record — never client-inferred.
+- See [SECURITY.md](SECURITY.md) for vulnerability reporting.
 
-WP-CLI commands specific to Starmus are documented here: [docs/WP-CLI.md](docs/WP-CLI.md)
+---
 
-```json
-{
-    "github-oauth": {
-        "github.com": "YOUR_GITHUB_TOKEN_HERE"
-    }
-}
+## 🧑‍💻 Development Setup
+
+```bash
+# Install PHP dependencies
+composer install
+
+# Install JS dependencies
+pnpm install
+
+# Build JS bundles
+pnpm build
+
+# Run PHP tests
+composer test
+
+# Run JS tests
+pnpm test
+
+# Lint PHP
+composer lint
+
+# Lint JS + CSS
+pnpm lint
 ```
 
+WP-CLI commands: [docs/WP-CLI.md](docs/WP-CLI.md)
+
+For Composer tools requiring a GitHub token, copy `auth.json.example` to `auth.json` and add your personal access token.
+
 ---
 
-## **License**
+## 📋 Standards Alignment Status
+
+| Finding | Severity | Status |
+|---|---|---|
+| F-01: Sirus integration absent | Critical | Pending (cross-repo, Phase 1 blocker) |
+| F-02: Direct AWS SDK use without interface | Critical | ✅ Fixed — `IStarmusStorageService` introduced |
+| F-03: No Sirus consent verification | High | Pending (blocked by F-01) |
+| F-04: Max recording duration not enforced | High | ✅ Fixed — hard stop at module level |
+| F-05: FFmpeg / R2 overlap | High | ✅ Fixed — R2 service is authoritative path |
+| F-06: `SELECT *` in JobSearchRepository | High | ✅ Fixed — explicit column list |
+| F-07: PASSTHROUGH_ALLOWLIST dual-path | Medium | ✅ Fixed — single FIELD_MAP |
+| F-08: `date()` instead of `gmdate()` | Medium | ✅ Fixed — UTC throughout |
+| F-09: AI provider integrations hardcoded | Medium | Pending |
+| F-10: TUS checksum verification unclear | Medium | Pending — audit required |
+| F-11: Template capability checks | Medium | Pending (blocked by F-01) |
+| F-12: Raw transaction queries undocumented | Low | ✅ Fixed — inline comment added |
+| F-13: UI-only capability check undocumented | Low | ✅ Fixed — inline comment added |
+| F-14: LanguageSignalAnalyzer 20 s window | Low | ✅ Fixed — capped at 5000 ms |
+
+DVE field rename (all `starmus_*` → `sparx_sparxstar_*` / `sparx_aiwa_*`) is complete in SchemaMapper.  Data migration script for existing records is required before deploying to production.
+
+Full specification: [Starmus_Tech_Spec_v1.0 (1).pdf](<Starmus_Tech_Spec_v1.0 (1).pdf>)
+
+---
+
+## 📜 License
 
 **LicenseRef-Starisian-Technologies-Proprietary**
 
-This software is governed by the **Starisian Technologies Confidential License**. Unauthorized use or distribution is strictly prohibited.
+This software is governed by the **Starisian Technologies Confidential License**.  Unauthorised use or distribution is strictly prohibited.
 
-By accessing this repo, you accept:
+By accessing this repository you accept:
+- [LICENSE.md](LICENSE.md) — legal terms and jurisdiction
+- [TERMS.md](TERMS.md) — ethics and allowed use
 
-- LICENSE.md — legal terms, jurisdiction
-- TERMS.md — ethics, allowed use
-
-**Not allowed:** surveillance, coercion, military use.
+**Not allowed:** surveillance, coercion, military use.  
 **Encouraged:** oral history, education, culture, community voice.
 
 ---
 
-## **📰 Ethics & Governance**
+## �� Cultural & Creative Projects Welcome
 
-You must adhere to these standards:
-
-- No use in surveillance or coercion
-- No use by military, police, or intelligence agencies
-- Exemptions may be granted for verified educational/cultural programs
-
-Full details in `ETHICS.md` or by request.
+While released under a restricted proprietary licence, we actively support nonprofit, educational, and cultural storytelling projects.  If you are working in underserved communities or preserving oral traditions, reach out — we are happy to explore free or discounted licensing.
 
 ---
 
-## **🚀 Why "Starmus"?**
+## 🌍 Contact
 
-Starmus honors the **Starmus Festival** founded by Dr. Garik Israelian and **Dr. Brian May** (guitarist of Queen \+ astrophysicist). Where **science meets sound**, this plugin captures that same cosmic energy — whether it’s a voice memo beneath the stars or an oral history from a rural village.
-
-**Sparxstar Starmus Audio** is a small tool with a **big mission**: to preserve stories, songs, and spirit in their purest form.
-
----
-
-## **🤝 Cultural & Creative Projects Welcome**
-
-While this plugin is released under a restricted proprietary license, we actively **support nonprofit, educational, and cultural storytelling** projects.
-
-If you're working in **underserved communities** or preserving oral traditions, reach out. We’re happy to explore **free or discounted licensing**.
-
----
-
-## **🌍 Contact**
-
-**Starisian Technologies**
-815 E Street, Suite 12083
-San Diego, CA 92101
+**Starisian Technologies**  
+815 E Street, Suite 12083  
+San Diego, CA 92101  
 **Email:** <support@starisian.com>
 
 ---
 
-**Made for creators. Built for culture. Inspired by the stars.**
+*Built for creators. Built for culture. Built for Africa.*
