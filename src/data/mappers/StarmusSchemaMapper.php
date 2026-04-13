@@ -227,7 +227,11 @@ class StarmusSchemaMapper
                 $mapped['sparx_sparxstar_signatory_ip'] = $data['ip_address'];
             }
 
-            // Taxonomies — mapped to correct internal keys for SubmissionHandler
+            // Taxonomies — these keys are used internally by StarmusSubmissionHandler to call
+            // wp_set_post_terms(). They are NOT ACF field names and do not follow the sparx_sparxstar_*
+            // convention because they are processed by a separate taxonomy assignment code path
+            // rather than being saved as post meta via update_field(). The sparx_tax_* prefix
+            // identifies them as internal taxonomy routing keys within this mapper.
             if ( ! empty($data['language'])) {
                 $mapped['sparx_tax_language'] = (int) $data['language'];
             } elseif ( ! empty($data['starmus_tax_language'])) {
