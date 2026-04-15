@@ -345,7 +345,7 @@ By accessing this repository you accept:
 
 ---
 
-## �� Cultural & Creative Projects Welcome
+## Cultural & Creative Projects Welcome
 
 While released under a restricted proprietary licence, we actively support nonprofit, educational, and cultural storytelling projects.  If you are working in underserved communities or preserving oral traditions, reach out — we are happy to explore free or discounted licensing.
 
