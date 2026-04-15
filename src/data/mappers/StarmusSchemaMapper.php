@@ -265,15 +265,26 @@ class StarmusSchemaMapper
     /**
      * Extracts user IDs for submission processing.
      *
-     * @param array $data Raw form data
+     * Returns the user-linked fields that must be saved as post meta on every submission.
+     * These keys match the ACF field names registered in the audio-recording post type.
+     * Called by StarmusSubmissionHandler::save_all_metadata() which iterates the result
+     * and calls update_acf_field() for each entry.
      *
-     * @return array Key-value pair of field names and user IDs
+     * @param array $data Raw form data (unused; user identity is resolved via WP session)
+     *
+     * @return array<string, int> Field name → user ID pairs, or empty array when not logged in.
      */
     public static function extract_user_ids(array $data): array
     {
-        // Prevent crashes by returning empty array if no user logic needed yet
-        // This restores the missing method called by StarmusSubmissionHandler
-        return [];
+        $user_id = get_current_user_id();
+        if ($user_id === 0) {
+            return [];
+        }
+
+        return [
+            'copyright_licensor' => $user_id,
+            'authorized_user_id' => $user_id,
+        ];
     }
 
     /**

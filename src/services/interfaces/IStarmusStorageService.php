@@ -58,4 +58,20 @@ interface IStarmusStorageService
      * @return string|null Pre-signed URL, or null if the provider does not support it.
      */
     public function getPresignedUrl(string $key, int $expires = 3600): ?string;
+
+    /**
+     * Process audio into Africa-optimised bandwidth tiers and upload the results.
+     *
+     * This method is the authoritative web-version generation path for
+     * bandwidth-constrained environments (2G / 3G / WiFi tiering).
+     * Implementations that do not support this optimisation must return an empty array.
+     * Ref: Tech Spec v1.0 F-05; DVE Architecture §Africa-First.
+     *
+     * @param string $file_path Absolute path to the local audio source file.
+     * @param int    $post_id   WordPress post ID associated with the recording.
+     *
+     * @return array<string, mixed> Keyed results array (web_versions, upload URLs, etc.),
+     *                              or an empty array if this optimisation is not supported.
+     */
+    public function processAfricaAudio(string $file_path, int $post_id): array;
 }

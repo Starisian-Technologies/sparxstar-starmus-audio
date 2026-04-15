@@ -74,14 +74,12 @@ final class StarmusAudioPipeline
             $starmus_tags = $this->generateStarmusTags($form_data, $post_id);
             $results['metadata_written'] = $this->id3_service->writeTags($file_path, $starmus_tags);
 
-            // 3. Generate web-optimized versions via R2DirectService (authoritative path).
-            // StarmusR2DirectService::processAfricaAudio creates bandwidth-tiered versions (2G/3G/WiFi),
-            // uploads them to storage, and removes local temp files. This is the production path.
-            // The separate FFmpeg web-version loop previously in this method has been removed to
-            // eliminate duplicate processing. Ref: Tech Spec v1.0 F-05.
-            // processAfricaAudio() is a StarmusR2DirectService-specific capability (not part of
-            // IStarmusStorageService). Other provider implementations will skip this step.
-            if ($this->r2_service instanceof StarmusR2DirectService) {
+            // 3. Generate web-optimized versions via the storage service (authoritative path).
+            // processAfricaAudio() creates bandwidth-tiered versions (2G/3G/WiFi), uploads them
+            // to storage, and removes local temp files. The default StarmusR2DirectService
+            // implements Africa-optimised encoding. Alternative provider implementations that do
+            // not support this optimisation must return []. Ref: Tech Spec v1.0 F-05.
+            if ($this->r2_service !== null) {
                 $r2_results = $this->r2_service->processAfricaAudio($file_path, $post_id);
                 if ($r2_results !== [] && ! isset($r2_results['message'])) {
                     $results['web_versions'] = $r2_results;
