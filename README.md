@@ -228,7 +228,10 @@ Reference: [Starmus_DVE_Alignment_v2.0.pdf](Starmus_DVE_Alignment_v2.0.pdf)
 
 ```php
 add_action('starmus_before_recorder_render', function() {
-    if (!is_user_logged_in()) wp_safe_redirect(wp_login_url()); exit;
+    if (!is_user_logged_in()) {
+        wp_safe_redirect(wp_login_url());
+        exit;
+    }
 });
 ```
 
