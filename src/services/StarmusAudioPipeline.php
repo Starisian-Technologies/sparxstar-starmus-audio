@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Starisian\Sparxstar\Starmus\services;
 
 use Starisian\Sparxstar\Starmus\helpers\StarmusLogger;
+use Starisian\Sparxstar\Starmus\services\interfaces\IStarmusStorageService;
 use Throwable;
 
 if ( ! \defined('ABSPATH')) {
@@ -22,14 +23,26 @@ final class StarmusAudioPipeline
 
     private ?StarmusFFmpegService $ffmpeg_service = null;
 
-    private ?StarmusR2DirectService $r2_service = null;
+    /**
+     * Storage service. Typed to IStarmusStorageService so callers can inject any
+     * S3-compatible provider (Cloudflare R2, AWS S3, test double, etc.).
+     * Defaults to StarmusR2DirectService when not explicitly provided.
+     * Ref: Tech Spec v1.0 F-02, CS §0.7.
+     */
+    private ?IStarmusStorageService $r2_service = null;
 
-    public function __construct()
+    /**
+     * @param IStarmusStorageService|null $storage_service Optional storage service.
+     *     When null, a StarmusR2DirectService is constructed using the provider
+     *     constants defined in wp-config.php. Pass an explicit implementation
+     *     to override the provider (e.g. for testing or alternative S3 targets).
+     */
+    public function __construct(?IStarmusStorageService $storage_service = null)
     {
         try {
             $this->id3_service = new StarmusEnhancedId3Service();
             $this->ffmpeg_service = new StarmusFFmpegService($this->id3_service);
-            $this->r2_service = new StarmusR2DirectService($this->id3_service);
+            $this->r2_service = $storage_service ?? new StarmusR2DirectService($this->id3_service);
         } catch (Throwable $throwable) {
             StarmusLogger::log($throwable);
         }
@@ -66,9 +79,13 @@ final class StarmusAudioPipeline
             // uploads them to storage, and removes local temp files. This is the production path.
             // The separate FFmpeg web-version loop previously in this method has been removed to
             // eliminate duplicate processing. Ref: Tech Spec v1.0 F-05.
-            $r2_results = $this->r2_service->processAfricaAudio($file_path, $post_id);
-            if ($r2_results !== [] && ! isset($r2_results['message'])) {
-                $results['web_versions'] = $r2_results;
+            // processAfricaAudio() is a StarmusR2DirectService-specific capability (not part of
+            // IStarmusStorageService). Other provider implementations will skip this step.
+            if ($this->r2_service instanceof StarmusR2DirectService) {
+                $r2_results = $this->r2_service->processAfricaAudio($file_path, $post_id);
+                if ($r2_results !== [] && ! isset($r2_results['message'])) {
+                    $results['web_versions'] = $r2_results;
+                }
             }
 
             // 4. Generate waveform for editor
