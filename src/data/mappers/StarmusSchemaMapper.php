@@ -40,8 +40,9 @@ class StarmusSchemaMapper
      * - sparx_sparxstar_* for platform-level fields
      * - sparx_aiwa_*      for AiWA corpus fields
      *
-     * Dates, Users, and JSON blobs are also handled in map_form_data() but are
-     * listed here for auditability.
+     * FIELD_MAP contains the explicit one-to-one field mappings. Some dates, users,
+     * JSON blobs, and other complex fields are handled separately in
+     * map_form_data() and may not be listed here.
      *
      * Ref: DVE Schema Alignment v2.0 §3 (Complete Field Alignment Map)
      */
