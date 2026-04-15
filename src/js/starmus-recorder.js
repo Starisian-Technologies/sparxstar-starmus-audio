@@ -624,6 +624,23 @@ function initRecorder(store, instanceId) {
             };
 
             recorderRegistry.set(instanceId, { mediaRecorder, rafId: null, signalAnalyzer });
+
+            // Validate bootstrap mode before starting. Per the bootstrap contract, there is no
+            // alternate bootstrap path — missing or invalid mode is an error, not a silent fallback.
+            // Ref: Tech Spec v1.0 F-04, STARMUS_BOOTSTRAP invariant.
+            const VALID_MODES = { production: 120000, development: 180000, draft: 300000 };
+            const bootstrapMode = window.STARMUS_BOOTSTRAP ? window.STARMUS_BOOTSTRAP.mode : null;
+            if (!bootstrapMode || !(bootstrapMode in VALID_MODES)) {
+                recorderRegistry.delete(instanceId);
+                stream.getTracks().forEach((t) => t.stop());
+                store.dispatch({
+                    type: "starmus/error",
+                    payload: { message: "Recording aborted: STARMUS_BOOTSTRAP.mode is missing or invalid." },
+                });
+                return;
+            }
+            const maxRecordingMs = VALID_MODES[bootstrapMode];
+
             const startTime = Date.now();
             mediaRecorder.start(chunkInterval);
             console.debug("[RECORDER]", mediaRecorder.state);
@@ -631,10 +648,6 @@ function initRecorder(store, instanceId) {
 
             // Max-duration hard stop. Limits by bootstrap mode per CS §4.1. Ref: Tech Spec v1.0 F-04.
             // production: 120 s | development: 180 s | draft: 300 s
-            const bootstrapMode =
-                (window.STARMUS_BOOTSTRAP && window.STARMUS_BOOTSTRAP.mode) || "production";
-            const MAX_DURATIONS = { production: 120000, development: 180000, draft: 300000 };
-            const maxRecordingMs = MAX_DURATIONS[bootstrapMode] || MAX_DURATIONS.production;
             const durationTimer = setTimeout(() => {
                 const rec = recorderRegistry.get(instanceId);
                 if (rec && rec.mediaRecorder && rec.mediaRecorder.state === "recording") {

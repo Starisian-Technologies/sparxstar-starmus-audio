@@ -421,7 +421,7 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
             } else {
                 $user_id = isset($form_data['user_id']) ? absint($form_data['user_id']) : get_current_user_id();
                 $mapped_data = StarmusSchemaMapper::map_form_data($form_data);
-                $title = $mapped_data['dc_creator'] ?? pathinfo($filename, PATHINFO_FILENAME);
+                $title = $mapped_data['sparx_sparxstar_legal_name'] ?? pathinfo($filename, PATHINFO_FILENAME);
                 $cpt_post_id = $this->dal->create_audio_post(
                     $title,
                     $this->get_cpt_slug(),
@@ -635,7 +635,7 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
                 $cpt_post_id = $existing_id;
             } else {
                 $mapped_data = StarmusSchemaMapper::map_form_data($form_data);
-                $title = $mapped_data['dc_creator'] ?? pathinfo((string) $files_data[$file_key]['name'], PATHINFO_FILENAME);
+                $title = $mapped_data['sparx_sparxstar_legal_name'] ?? pathinfo((string) $files_data[$file_key]['name'], PATHINFO_FILENAME);
                 $cpt_post_id = $this->dal->create_audio_post($title, $this->get_cpt_slug(), get_current_user_id());
             }
 
@@ -864,9 +864,14 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
                 $this->update_acf_field('starmus_submission_id', sanitize_text_field($mapped_data['starmus_submission_id']), $audio_post_id);
             }
 
-            // Handle taxonomies through mapped data
-            if (! empty($mapped_data['starmus_tax_language'])) {
-                wp_set_post_terms($audio_post_id, [(int) $mapped_data['starmus_tax_language']], 'starmus_tax_language');
+            // Handle taxonomies through mapped data.
+            // Mapper outputs sparx_tax_* routing keys; WordPress taxonomy slugs remain starmus_tax_*.
+            if (! empty($mapped_data['sparx_tax_language'])) {
+                wp_set_post_terms($audio_post_id, [(int) $mapped_data['sparx_tax_language']], 'starmus_tax_language');
+            }
+
+            if (! empty($mapped_data['sparx_tax_dialect'])) {
+                wp_set_post_terms($audio_post_id, [(int) $mapped_data['sparx_tax_dialect']], 'starmus_tax_dialect');
             }
 
             if (! empty($mapped_data['recording-type'])) {

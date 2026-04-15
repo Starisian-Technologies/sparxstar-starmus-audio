@@ -107,8 +107,8 @@ class StarmusSanitizer
 
         // --- LEGACY MAPPING (PRESERVED) ---
 
-        if ( ! empty($mapped_data['dc_creator'])) {
-            $meta['_starmus_title'] = sanitize_text_field($mapped_data['dc_creator']);
+        if ( ! empty($mapped_data['sparx_sparxstar_legal_name'])) {
+            $meta['_starmus_title'] = sanitize_text_field($mapped_data['sparx_sparxstar_legal_name']);
         }
 
         if ( ! empty($form_data['description'])) {
