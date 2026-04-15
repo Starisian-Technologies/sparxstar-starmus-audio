@@ -635,7 +635,9 @@ function initRecorder(store, instanceId) {
                 stream.getTracks().forEach((t) => t.stop());
                 store.dispatch({
                     type: "starmus/error",
-                    payload: { message: "Recording aborted: STARMUS_BOOTSTRAP.mode is missing or invalid." },
+                    payload: {
+                        message: "Recording aborted: STARMUS_BOOTSTRAP.mode is missing or invalid.",
+                    },
                 });
                 return;
             }

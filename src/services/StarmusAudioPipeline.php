@@ -33,9 +33,9 @@ final class StarmusAudioPipeline
 
     /**
      * @param IStarmusStorageService|null $storage_service Optional storage service.
-     *     When null, a StarmusR2DirectService is constructed using the provider
-     *     constants defined in wp-config.php. Pass an explicit implementation
-     *     to override the provider (e.g. for testing or alternative S3 targets).
+     *                                                     When null, a StarmusR2DirectService is constructed using the provider
+     *                                                     constants defined in wp-config.php. Pass an explicit implementation
+     *                                                     to override the provider (e.g. for testing or alternative S3 targets).
      */
     public function __construct(?IStarmusStorageService $storage_service = null)
     {
