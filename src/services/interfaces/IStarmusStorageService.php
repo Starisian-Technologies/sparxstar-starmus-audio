@@ -68,7 +68,7 @@ interface IStarmusStorageService
      * Ref: Tech Spec v1.0 F-05; DVE Architecture §Africa-First.
      *
      * @param string $file_path Absolute path to the local audio source file.
-     * @param int    $post_id   WordPress post ID associated with the recording.
+     * @param int $post_id WordPress post ID associated with the recording.
      *
      * @return array<string, mixed> Keyed results array (web_versions, upload URLs, etc.),
      *                              or an empty array if this optimisation is not supported.
