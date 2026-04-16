@@ -148,8 +148,8 @@ class StarmusConsentUI
         $recording_id = 0;
 
         // Intentional raw transaction queries: START TRANSACTION / COMMIT / ROLLBACK carry no
-        // user-supplied data, so WPDB prepared statement pattern is not applicable here.
-        // Ref: Tech Spec v1.0 F-12.
+        // user-supplied data and cannot be parameterised via $wpdb->prepare(). Raw query is
+        // correct and safe here — there is no dynamic input to escape.
         $wpdb->query('START TRANSACTION');
 
         try {

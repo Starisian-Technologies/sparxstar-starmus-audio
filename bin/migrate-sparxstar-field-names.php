@@ -190,11 +190,26 @@ do {
     $total_posts += count($posts);
 
     foreach ($posts as $post_id) {
+        // Track new keys written during this post's pass to detect same-post collisions.
+        // Two old keys (e.g. dc_language + starmus_original_language) may map to the same
+        // new key; if both have values and they differ, the second write would silently win.
+        $written_this_pass = [];
+
         foreach ($FIELD_MAP as $old_key => $new_key) {
             $old_val = get_post_meta($post_id, $old_key, true);
 
             if ($old_val === '' || $old_val === null || $old_val === false) {
                 $total_empty++;
+                continue;
+            }
+
+            // Collision detection: a different old key already wrote a different value to
+            // this new key during the current post's pass. Log a warning and skip.
+            if (isset($written_this_pass[$new_key]) && $written_this_pass[$new_key] !== $old_val) {
+                WP_CLI::warning(
+                    "  CONFLICT Post {$post_id}: {$new_key} already set from '{$written_this_pass[$new_key]}' by a previous old key; '{$old_key}' has a different value '{$old_val}' — skipping. Resolve manually."
+                );
+                $total_skipped++;
                 continue;
             }
 
@@ -213,6 +228,8 @@ do {
                 WP_CLI::debug("  Post {$post_id}: copied {$old_key} → {$new_key}");
                 $total_copied++;
             }
+
+            $written_this_pass[$new_key] = $old_val;
         }
     }
 
