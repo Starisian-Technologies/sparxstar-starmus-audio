@@ -31,20 +31,21 @@ final class StarmusR2DirectService implements IStarmusStorageService
 
     private ?StarmusId3Service $id3_service = null;
 
+    /**
+     * @throws \RuntimeException When required storage constants are missing or the SDK client
+     *                           cannot be initialised. Callers (e.g. StarmusAudioPipeline) must
+     *                           catch and decide whether to abort or degrade gracefully.
+     */
     public function __construct(StarmusId3Service $id3_service)
     {
-        try {
-            $this->id3_service = $id3_service;
+        $this->id3_service = $id3_service;
 
-            $provider = \defined('STARMUS_STORAGE_PROVIDER') ? STARMUS_STORAGE_PROVIDER : 'r2';
+        $provider = \defined('STARMUS_STORAGE_PROVIDER') ? STARMUS_STORAGE_PROVIDER : 'r2';
 
-            if ($provider === 'aws') {
-                $this->configureAws();
-            } else {
-                $this->configureR2();
-            }
-        } catch (Throwable $throwable) {
-            StarmusLogger::log($throwable);
+        if ($provider === 'aws') {
+            $this->configureAws();
+        } else {
+            $this->configureR2();
         }
     }
 
