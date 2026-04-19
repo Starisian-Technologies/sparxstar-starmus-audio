@@ -65,13 +65,16 @@ interface IStarmusStorageService
      * This method is the authoritative web-version generation path for
      * bandwidth-constrained environments (2G / 3G / WiFi tiering).
      * Implementations that do not support this optimisation must return an empty array.
+     * Implementations that support the optimisation but determine that no processing is
+     * required may return a keyed array containing a human-readable `message` entry.
      * Ref: Tech Spec v1.0 F-05; DVE Architecture §Africa-First.
      *
      * @param string $file_path Absolute path to the local audio source file.
      * @param int $post_id WordPress post ID associated with the recording.
      *
      * @return array<string, mixed> Keyed results array (web_versions, upload URLs, etc.),
-     *                              or an empty array if this optimisation is not supported.
+     *                              an empty array if this optimisation is not supported,
+     *                              or a keyed no-op response that may include `message`.
      */
     public function processAfricaAudio(string $file_path, int $post_id): array;
 }
