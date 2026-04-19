@@ -62,6 +62,18 @@ final class StarmusAudioPipeline
         ];
 
         try {
+            if ($this->id3_service === null || $this->ffmpeg_service === null) {
+                StarmusLogger::error(
+                    'Pipeline not fully initialised — id3_service or ffmpeg_service is null. Processing aborted.',
+                    [
+                        'component' => self::class,
+                        'post_id' => $post_id,
+                        'file_path' => $file_path,
+                    ]
+                );
+                return $results;
+            }
+
             // 1. Analyze original file with getID3
             $analysis = $this->id3_service->analyzeFile($file_path);
             $results['original_analysis'] = $this->extractKeyMetadata($analysis);

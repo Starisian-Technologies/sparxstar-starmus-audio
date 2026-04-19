@@ -802,57 +802,36 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
             // IP stored in starmus_contributor_ip, distinct field for redundancy if needed
             // $this->update_acf_field('starmus_agree_ip', $user_ip, $audio_post_id);
 
-            // Session metadata (Group B) - includes new fields
-            $session_fields = [
-                'starmus_project_collection_id',
-                'starmus_accession_number',
-                'starmus_session_location',
-                'starmus_session_date', // Fixed key
-                'starmus_session_start_time',
-                'starmus_session_gps',
-                'starmus_recording_equipment',
-                'starmus_audio_files_originals',
-                'starmus_media_condition',
-                'agreement_to_terms_toggle',
-                'related_consent_agreement',
-                'starmus_rights_use',
-                'starmus_access_level',
-                // 'first_pass_transcription', // REMOVED: Handled explicitly via starmus_transcription_text
-                'starmus_audio_quality_score',
-                'starmus_assigned_story_type',
+            // Persist all DVE canonical fields from mapper output.
+            // The mapper emits sparx_sparxstar_* / sparx_aiwa_* keys. Persist every field that is
+            // not an internal routing key (sparx_tax_*), not already saved via the explicit blocks
+            // above, and not a user-ID field handled by extract_user_ids().
+            // JSON fields are persisted verbatim; scalar fields are sanitized as text.
+            $skip_keys = [
+                // Internal taxonomy routing keys — not ACF meta (set via wp_set_post_terms below).
+                'sparx_tax_language',
+                'sparx_tax_dialect',
+                // User IDs — already persisted via extract_user_ids() loop above.
+                'copyright_licensor',
+                'authorized_user_id',
+                // Submission ID — persisted explicitly below.
+                'sparx_sparxstar_signatory_submission_id',
             ];
-            foreach ($session_fields as $field) {
-                if (isset($mapped_data[$field])) {
-                    // specific handling for array/json fields if needed, but currently mapped logic handles string conversions
-                    $this->update_acf_field($field, sanitize_text_field((string) $mapped_data[$field]), $audio_post_id);
-                }
-            }
-
-            // Processing fields (Group C) - JSON encoded
             foreach ($mapped_data as $field => $value) {
+                if (\in_array($field, $skip_keys, true)) {
+                    continue;
+                }
                 if (StarmusSchemaMapper::is_json_field($field)) {
                     $this->update_acf_field($field, $value, $audio_post_id);
+                } else {
+                    $this->update_acf_field($field, sanitize_text_field((string) $value), $audio_post_id);
                 }
             }
 
-            // Core archival fields (Group A)
-            if (isset($mapped_data['starmus_dc_creator'])) {
-                $this->update_acf_field('starmus_dc_creator', sanitize_text_field((string) $mapped_data['starmus_dc_creator']), $audio_post_id);
-            }
-
-            // File attachments (Group C)
+            // File attachments — override audio_files_originals with the WP attachment ID when present.
             if ($attachment_id !== 0) {
-                $this->update_acf_field('starmus_original_source', $attachment_id, $audio_post_id);
-                // Also update audio_files_originals for backward compatibility
-                $this->update_acf_field('starmus_audio_files_originals', [$attachment_id], $audio_post_id);
-            }
-
-            if (isset($mapped_data['starmus_mastered_mp3'])) {
-                $this->update_acf_field('starmus_mastered_mp3', $mapped_data['starmus_mastered_mp3'], $audio_post_id);
-            }
-
-            if (isset($mapped_data['starmus_archival_wav'])) {
-                $this->update_acf_field('starmus_archival_wav', $mapped_data['starmus_archival_wav'], $audio_post_id);
+                $this->update_acf_field('sparx_sparxstar_original_source', $attachment_id, $audio_post_id);
+                $this->update_acf_field('sparx_sparxstar_audio_files_originals', [$attachment_id], $audio_post_id);
             }
 
             // Additional Group D fields

@@ -498,6 +498,23 @@ function initRecorder(store, instanceId) {
             return;
         }
         try {
+            // Validate bootstrap mode BEFORE requesting microphone access.
+            // Per the bootstrap contract, missing or invalid mode is a hard error — not a silent
+            // fallback. Validating here ensures no mic prompt is shown when bootstrap is absent.
+            // Ref: Tech Spec v1.0 F-04, STARMUS_BOOTSTRAP invariant.
+            const VALID_MODES = { production: 120000, development: 180000, draft: 300000 };
+            const bootstrapMode = window.STARMUS_BOOTSTRAP ? window.STARMUS_BOOTSTRAP.mode : null;
+            if (!bootstrapMode || !(bootstrapMode in VALID_MODES)) {
+                store.dispatch({
+                    type: "starmus/error",
+                    payload: {
+                        message: "Recording aborted: STARMUS_BOOTSTRAP.mode is missing or invalid.",
+                    },
+                });
+                return;
+            }
+            const maxRecordingMs = VALID_MODES[bootstrapMode];
+
             // Get optimized settings from SPARXSTAR
             const envData = sparxstarIntegration.getEnvironmentData();
             const settings =
@@ -624,24 +641,6 @@ function initRecorder(store, instanceId) {
             };
 
             recorderRegistry.set(instanceId, { mediaRecorder, rafId: null, signalAnalyzer });
-
-            // Validate bootstrap mode before starting. Per the bootstrap contract, there is no
-            // alternate bootstrap path — missing or invalid mode is an error, not a silent fallback.
-            // Ref: Tech Spec v1.0 F-04, STARMUS_BOOTSTRAP invariant.
-            const VALID_MODES = { production: 120000, development: 180000, draft: 300000 };
-            const bootstrapMode = window.STARMUS_BOOTSTRAP ? window.STARMUS_BOOTSTRAP.mode : null;
-            if (!bootstrapMode || !(bootstrapMode in VALID_MODES)) {
-                recorderRegistry.delete(instanceId);
-                stream.getTracks().forEach((t) => t.stop());
-                store.dispatch({
-                    type: "starmus/error",
-                    payload: {
-                        message: "Recording aborted: STARMUS_BOOTSTRAP.mode is missing or invalid.",
-                    },
-                });
-                return;
-            }
-            const maxRecordingMs = VALID_MODES[bootstrapMode];
 
             const startTime = Date.now();
             mediaRecorder.start(chunkInterval);

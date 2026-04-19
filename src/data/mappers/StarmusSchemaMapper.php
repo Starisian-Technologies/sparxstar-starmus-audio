@@ -328,9 +328,13 @@ class StarmusSchemaMapper
         }
 
         if (\is_string($value)) {
-            json_decode(wp_unslash($value));
+            $unslashed = wp_unslash($value);
+            json_decode($unslashed);
             if (json_last_error() === JSON_ERROR_NONE) {
-                return $value;
+                // Return the unslashed string so WordPress-added magic quotes are stripped
+                // before the value reaches storage. wp_unslash() is idempotent: it is safe
+                // to call even when the value was not slashed.
+                return $unslashed;
             }
 
             StarmusLogger::warning(\sprintf('Mapper received invalid JSON string for (%s). Wrapping.', $context));
