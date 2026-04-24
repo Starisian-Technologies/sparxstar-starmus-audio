@@ -121,6 +121,15 @@
 /* 2. BATTERY STATUS CACHE */
 
 /**
+ * Battery level (0–1) below which uploads are deferred when not charging.
+ * Chosen at 20 % to give enough headroom for critical device operations.
+ *
+ * @private
+ * @constant {number}
+ */
+const BATTERY_CRITICAL_LEVEL = 0.2;
+
+/**
  * Cached battery state populated by {@link _readBattery}.
  * Defaults to a safe "full and charging" assumption so that
  * isBatteryCritical() returns false before the API responds.
@@ -248,7 +257,7 @@ function _resolveChunkSize(effectiveType) {
 const _COUNTRY_COST_PER_MB = {
     BF: 0.17, // Burkina Faso
     CD: 0.18, // Dem. Rep. Congo
-    CI: 0.1, // Côte d'Ivoire
+    CI: 0.10, // Côte d'Ivoire
     CM: 0.13, // Cameroon
     ET: 0.11, // Ethiopia
     GH: 0.08, // Ghana
@@ -260,7 +269,7 @@ const _COUNTRY_COST_PER_MB = {
     MZ: 0.12, // Mozambique
     NG: 0.06, // Nigeria
     RW: 0.07, // Rwanda
-    SN: 0.1, // Senegal
+    SN: 0.10, // Senegal
     TZ: 0.09, // Tanzania
     UG: 0.12, // Uganda
     ZA: 0.04, // South Africa
@@ -325,6 +334,16 @@ const sparxstarIntegration = {
     },
 
     /**
+     * Returns the live Network Information object (with vendor prefix fallbacks),
+     * or null when the API is unavailable. Exposed so other modules can read
+     * effectiveType and saveData without duplicating the vendor-prefix logic.
+     *
+     * @function getConnection
+     * @returns {NetworkInformation|null}
+     */
+    getConnection: () => _getConnection(),
+
+    /**
      * Returns true when the battery level is below 20 % and not charging.
      * Reads the live cache maintained by _readBattery(), making this a
      * zero-cost synchronous call suitable for hot paths (e.g. processQueue).
@@ -333,7 +352,7 @@ const sparxstarIntegration = {
      * @returns {boolean}
      */
     isBatteryCritical: () => {
-        return _batteryCache.level < 0.2 && !_batteryCache.charging;
+        return _batteryCache.level < BATTERY_CRITICAL_LEVEL && !_batteryCache.charging;
     },
 
     /**
