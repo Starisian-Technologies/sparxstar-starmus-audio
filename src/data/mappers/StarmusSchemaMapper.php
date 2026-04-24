@@ -283,7 +283,7 @@ class StarmusSchemaMapper
 
         // Keys MUST match the ACF field names registered in StarmusPostTypeLoader.
         return [
-            'starmus_copyright_licensor'  => $user_id,
+            'starmus_copyright_licensor' => $user_id,
             'starmus_authorized_signatory' => $user_id,
         ];
     }
