@@ -137,12 +137,13 @@ class StarmusSchemaMapper
         'label_name' => 'sparx_sparxstar_label_name',
 
         // -- Transcription & Translation (§3.7) --
-        // IMPORTANT: 'transcription' (plain text) is intentionally absent from this map.
-        // Per DVE Alignment v2.0 §3.7, transcription text is NOT a meta field — it lives in
-        // post_content of the sparx_aiwa_transcription post type. Any caller previously sending
-        // a 'transcription' key in form data must be updated to create/update the transcription
-        // post type via StarmusAudioDAL::create_transcription_post() instead. Passing
-        // 'transcription' here will silently drop the value. Same applies to 'translation'.
+        // NOTE: 'transcription' (plain text) is intentionally absent from this map.
+        // StarmusSubmissionHandler::save_all_metadata() persists transcription text directly to
+        // the 'starmus_transcription_text' ACF field outside the mapper pipeline. Passing a
+        // 'transcription' key through map_form_data() will silently drop the value. The DAL
+        // method StarmusAudioDAL::create_transcription_post() exists for creating dedicated
+        // transcription posts when the full DVE §3.7 post-type workflow is adopted. Same note
+        // applies to 'translation' (plain text).
         'transcription_json' => 'sparx_sparxstar_transcription_json',
         'translation_language' => 'sparx_sparxstar_translation_language',
         'original_language' => 'sparx_sparxstar_original_language',

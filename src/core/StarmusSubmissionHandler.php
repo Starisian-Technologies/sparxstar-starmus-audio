@@ -765,12 +765,11 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
                 error_log('[STARMUS PHP] waveform_json is empty in form_data.');
             }
 
-            // Handle first-pass transcription from JavaScript
+            // Handle first-pass transcription from JavaScript.
+            // Stored to starmus_transcription_text ACF field; outside the mapper pipeline.
+            // See StarmusSchemaMapper::FIELD_MAP §3.7 for rationale.
             if (! empty($form_data['transcription'])) {
-                error_log('[STARMUS PHP] Saving starmus_transcription_text. Keys: ' . substr((string) $form_data['transcription'], 0, 50));
                 $this->update_acf_field('starmus_transcription_text', sanitize_textarea_field($form_data['transcription']), $audio_post_id);
-            } else {
-                error_log('[STARMUS PHP] transcription is empty in form_data.');
             }
 
             if (! empty($form_data['transcription_json'])) {
