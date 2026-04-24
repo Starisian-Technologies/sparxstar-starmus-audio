@@ -504,7 +504,7 @@ function initRecorder(store, instanceId) {
             // Ref: Tech Spec v1.0 F-04, STARMUS_BOOTSTRAP invariant.
             const VALID_MODES = { production: 120000, development: 180000, draft: 300000 };
             const bootstrapMode = window.STARMUS_BOOTSTRAP ? window.STARMUS_BOOTSTRAP.mode : null;
-            if (!bootstrapMode || !Object.hasOwn(VALID_MODES, bootstrapMode)) {
+            if (!bootstrapMode || !Object.prototype.hasOwnProperty.call(VALID_MODES, bootstrapMode)) {
                 store.dispatch({
                     type: "starmus/error",
                     payload: {
