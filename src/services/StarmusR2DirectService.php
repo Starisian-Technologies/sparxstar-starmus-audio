@@ -5,6 +5,7 @@ namespace Starisian\Sparxstar\Starmus\services;
 
 use Aws\S3\S3Client;
 use Exception;
+use RuntimeException;
 use Starisian\Sparxstar\Starmus\helpers\StarmusLogger;
 use Starisian\Sparxstar\Starmus\services\interfaces\IStarmusStorageService;
 use Throwable;
@@ -235,8 +236,18 @@ final class StarmusR2DirectService implements IStarmusStorageService
 
     private function configureR2(): void
     {
+        if (! \defined('STARMUS_R2_ACCOUNT_ID') || STARMUS_R2_ACCOUNT_ID === '') {
+            throw new RuntimeException('STARMUS_R2_ACCOUNT_ID is not defined or is empty.');
+        }
+        if (! \defined('STARMUS_R2_ACCESS_KEY') || STARMUS_R2_ACCESS_KEY === '') {
+            throw new RuntimeException('STARMUS_R2_ACCESS_KEY is not defined or is empty.');
+        }
+        if (! \defined('STARMUS_R2_SECRET_KEY') || STARMUS_R2_SECRET_KEY === '') {
+            throw new RuntimeException('STARMUS_R2_SECRET_KEY is not defined or is empty.');
+        }
+
         $this->bucket = \defined('STARMUS_R2_BUCKET') ? STARMUS_R2_BUCKET : 'starmus-audio';
-        $account_id = \defined('STARMUS_R2_ACCOUNT_ID') ? STARMUS_R2_ACCOUNT_ID : '';
+        $account_id = STARMUS_R2_ACCOUNT_ID;
         $this->public_endpoint = \defined('STARMUS_R2_ENDPOINT') ? STARMUS_R2_ENDPOINT : '';
 
         $this->storage_client = new S3Client([
@@ -244,8 +255,8 @@ final class StarmusR2DirectService implements IStarmusStorageService
             'region' => 'auto',
             'endpoint' => \sprintf('https://%s.r2.cloudflarestorage.com', $account_id),
             'credentials' => [
-                'key' => \defined('STARMUS_R2_ACCESS_KEY') ? STARMUS_R2_ACCESS_KEY : '',
-                'secret' => \defined('STARMUS_R2_SECRET_KEY') ? STARMUS_R2_SECRET_KEY : '',
+                'key' => STARMUS_R2_ACCESS_KEY,
+                'secret' => STARMUS_R2_SECRET_KEY,
             ],
             'use_path_style_endpoint' => true,
         ]);
@@ -253,7 +264,17 @@ final class StarmusR2DirectService implements IStarmusStorageService
 
     private function configureAws(): void
     {
-        $this->bucket = \defined('STARMUS_S3_BUCKET') ? STARMUS_S3_BUCKET : '';
+        if (! \defined('STARMUS_S3_BUCKET') || STARMUS_S3_BUCKET === '') {
+            throw new RuntimeException('STARMUS_S3_BUCKET is not defined or is empty.');
+        }
+        if (! \defined('STARMUS_S3_ACCESS_KEY') || STARMUS_S3_ACCESS_KEY === '') {
+            throw new RuntimeException('STARMUS_S3_ACCESS_KEY is not defined or is empty.');
+        }
+        if (! \defined('STARMUS_S3_SECRET_KEY') || STARMUS_S3_SECRET_KEY === '') {
+            throw new RuntimeException('STARMUS_S3_SECRET_KEY is not defined or is empty.');
+        }
+
+        $this->bucket = STARMUS_S3_BUCKET;
         $region = \defined('STARMUS_S3_REGION') ? STARMUS_S3_REGION : 'us-east-1';
 
         $this->public_endpoint = \defined('STARMUS_S3_ENDPOINT')
@@ -264,8 +285,8 @@ final class StarmusR2DirectService implements IStarmusStorageService
             'version' => 'latest',
             'region' => $region,
             'credentials' => [
-                'key' => \defined('STARMUS_S3_ACCESS_KEY') ? STARMUS_S3_ACCESS_KEY : '',
-                'secret' => \defined('STARMUS_S3_SECRET_KEY') ? STARMUS_S3_SECRET_KEY : '',
+                'key' => STARMUS_S3_ACCESS_KEY,
+                'secret' => STARMUS_S3_SECRET_KEY,
             ],
         ]);
     }
