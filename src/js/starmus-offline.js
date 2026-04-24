@@ -321,6 +321,13 @@ class OfflineQueue {
         if (this.isProcessing || !navigator.onLine) {
             return;
         }
+         // Defer uploads when battery is critically low (<20%, not charging).
+        // isBatteryCritical() reads the live cache kept by _readBattery() in the
+        // integration module, so this is a zero-cost synchronous check.
+        if (sparxstarIntegration.isBatteryCritical?.()) {
+            debugLog("[Offline] Battery critical — deferring queue processing");
+            return;
+        }
         this.isProcessing = true;
 
         try {
