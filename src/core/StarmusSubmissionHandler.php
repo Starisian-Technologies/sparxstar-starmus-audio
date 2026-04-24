@@ -802,14 +802,22 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
             // $this->update_acf_field('starmus_agree_ip', $user_ip, $audio_post_id);
 
             // Persist all DVE canonical fields from mapper output.
-            // The mapper emits sparx_sparxstar_* / sparx_aiwa_* keys. Persist every field that is
-            // not an internal routing key (sparx_tax_*), not already saved via the explicit blocks
-            // above, and not a user-ID field handled by extract_user_ids().
-            // JSON fields are persisted verbatim; scalar fields are sanitized as text.
+            // The mapper emits sparx_sparxstar_* / sparx_aiwa_* keys.  These are not yet registered
+            // as ACF fields (ACF still uses starmus_* names), so they must be persisted directly via
+            // update_post_meta() rather than through update_acf_field() / update_field() — calling
+            // update_field() on an unregistered key returns false even if update_post_meta() would
+            // succeed, causing both silent data loss and spurious log_write_failure() entries.
+            // Once ACF field definitions are updated to the canonical names, this loop can revert to
+            // update_acf_field().
             $skip_keys = [
                 // Internal taxonomy routing keys — not ACF meta (set via wp_set_post_terms below).
                 'sparx_tax_language',
                 'sparx_tax_dialect',
+                // recording-type is also a taxonomy term ID, handled by wp_set_post_terms below.
+                'recording-type',
+                // transcriber is an internal calibration payload persisted separately as
+                // starmus_transcriber_metadata JSON above; do not write raw to post meta.
+                'transcriber',
                 // User IDs — already persisted via extract_user_ids() loop above.
                 // Keys match ACF registrations (starmus_copyright_licensor / starmus_authorized_signatory).
                 'starmus_copyright_licensor',
@@ -821,10 +829,12 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
                 if (\in_array($field, $skip_keys, true)) {
                     continue;
                 }
+                // sparx_sparxstar_* / sparx_aiwa_* canonical keys are not registered ACF fields yet.
+                // Persist directly as post meta to avoid false failures from update_field().
                 if (StarmusSchemaMapper::is_json_field($field)) {
-                    $this->update_acf_field($field, $value, $audio_post_id);
+                    update_post_meta($audio_post_id, $field, $value);
                 } else {
-                    $this->update_acf_field($field, sanitize_text_field((string) $value), $audio_post_id);
+                    update_post_meta($audio_post_id, $field, sanitize_text_field((string) $value));
                 }
             }
 
