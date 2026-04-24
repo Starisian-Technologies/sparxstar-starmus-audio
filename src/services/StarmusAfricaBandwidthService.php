@@ -17,6 +17,44 @@ if ( ! \defined('ABSPATH')) {
  */
 final class StarmusAfricaBandwidthService
 {
+    /**
+     * Approximate mobile data cost per MB (USD) by country ISO-3166-1 alpha-2.
+     *
+     * Sources: GSMA Intelligence, Alliance for Affordable Internet (A4AI) 2024 reports.
+     * Costs reflect prepaid 1 GB bundles divided by 1024. Update annually.
+     *
+     * @var array<string, float>
+     */
+    private const COUNTRY_COST_PER_MB = [
+        'BF' => 0.17, // Burkina Faso
+        'CD' => 0.18, // Dem. Rep. Congo
+        'CI' => 0.10, // Côte d'Ivoire
+        'CM' => 0.13, // Cameroon
+        'ET' => 0.11, // Ethiopia
+        'GH' => 0.08, // Ghana
+        'GM' => 0.15, // Gambia
+        'KE' => 0.05, // Kenya
+        'MG' => 0.11, // Madagascar
+        'ML' => 0.18, // Mali
+        'MW' => 0.14, // Malawi
+        'MZ' => 0.12, // Mozambique
+        'NG' => 0.06, // Nigeria
+        'RW' => 0.07, // Rwanda
+        'SN' => 0.10, // Senegal
+        'TZ' => 0.09, // Tanzania
+        'UG' => 0.12, // Uganda
+        'ZA' => 0.04, // South Africa
+        'ZM' => 0.09, // Zambia
+        'ZW' => 0.16, // Zimbabwe
+    ];
+
+    /**
+     * Fallback cost per MB used when the country code is not in the map.
+     *
+     * @var float
+     */
+    private const DEFAULT_COST_PER_MB = 0.15;
+
     private string $ffmpeg_path;
 
     public function __construct(?IStarmusAudioDAL $dal = null)
@@ -110,22 +148,56 @@ final class StarmusAfricaBandwidthService
     }
 
     /**
-     * Estimate data usage for African data plans
+     * Returns the data cost per MB (USD) for the given ISO 3166-1 alpha-2
+     * country code. Falls back to {@see DEFAULT_COST_PER_MB} for unknown codes.
+     *
+     * @param string $country_code ISO 3166-1 alpha-2 country code (e.g. 'GM').
+     * @return float Cost in USD per MB.
      */
-    public function estimateDataUsage(string $file_path): array
+    public function getCountryCostPerMb(string $country_code): float
+    {
+        $code = strtoupper(trim($country_code));
+        return self::COUNTRY_COST_PER_MB[$code] ?? self::DEFAULT_COST_PER_MB;
+    }
+
+    /**
+     * Estimate data usage and cost for a given audio file.
+     *
+     * Returns bandwidth consumption figures and an approximate monetary cost
+     * based on real prepaid mobile-data pricing for the specified African
+     * country. Pass an ISO 3166-1 alpha-2 country code to get a country-specific
+     * cost estimate; unknown codes fall back to {@see DEFAULT_COST_PER_MB}.
+     *
+     * @param string $file_path    Absolute path to the audio file.
+     * @param string $country_code ISO 3166-1 alpha-2 country code (default: 'GM').
+     * @return array{
+     *     size_mb: float,
+     *     cost_estimate_usd: float,
+     *     cost_per_mb_usd: float,
+     *     country: string,
+     *     download_time_2g: string,
+     *     download_time_3g: string,
+     *     recommended: string
+     * }|array<never, never>
+     */
+    public function estimateDataUsage(string $file_path, string $country_code = 'GM'): array
     {
         if ( ! file_exists($file_path)) {
             return [];
         }
 
-        $size_mb = filesize($file_path) / (1024 * 1024);
+        $size_mb      = filesize($file_path) / (1024 * 1024);
+        $cost_per_mb  = $this->getCountryCostPerMb($country_code);
+        $country_upper = strtoupper(trim($country_code));
 
         return [
-        'size_mb' => round($size_mb, 2),
-        'cost_estimate_usd' => round($size_mb * 0.15, 2), // ~$0.15/MB in Gambia
-        'download_time_2g' => round($size_mb / 0.03, 0) . 's', // ~30KB/s
-        'download_time_3g' => round($size_mb / 0.1, 0) . 's',  // ~100KB/s
-        'recommended' => $size_mb > 5 ? '2g' : ($size_mb > 2 ? '3g' : 'wifi'),
+            'size_mb'          => round($size_mb, 2),
+            'cost_estimate_usd' => round($size_mb * $cost_per_mb, 4),
+            'cost_per_mb_usd'  => $cost_per_mb,
+            'country'          => $country_upper,
+            'download_time_2g' => round($size_mb / 0.03, 0) . 's', // ~30 KB/s
+            'download_time_3g' => round($size_mb / 0.1, 0) . 's',  // ~100 KB/s
+            'recommended'      => $size_mb > 5 ? '2g' : ($size_mb > 2 ? '3g' : 'wifi'),
         ];
     }
 }

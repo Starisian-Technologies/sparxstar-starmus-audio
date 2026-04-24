@@ -321,11 +321,21 @@ class OfflineQueue {
         if (this.isProcessing || !navigator.onLine) {
             return;
         }
-         // Defer uploads when battery is critically low (<20%, not charging).
+        // Defer uploads when battery is critically low (<20%, not charging).
         // isBatteryCritical() reads the live cache kept by _readBattery() in the
         // integration module, so this is a zero-cost synchronous check.
         if (sparxstarIntegration.isBatteryCritical?.()) {
             debugLog("[Offline] Battery critical — deferring queue processing");
+            return;
+        }
+
+        // Defer uploads on slow-2g or when the OS data-saver flag is active.
+        // Both conditions indicate the user is on a metered/expensive connection,
+        // common in African markets where per-MB costs are high.
+        const _conn =
+            navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        if (_conn?.effectiveType === "slow-2g" || _conn?.saveData === true) {
+            debugLog("[Offline] Slow network or data saver active — deferring queue processing");
             return;
         }
         this.isProcessing = true;
