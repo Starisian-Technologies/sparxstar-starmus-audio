@@ -185,9 +185,9 @@ class StarmusSchemaMapper
                 ? ($mapped['sparx_sparxstar_legal_name'] ?? 'Unknown Creator')
                 : sanitize_text_field($data['dc_creator']);
 
-            // User Links
-            $mapped['copyright_licensor'] = $user_id;
-            $mapped['authorized_user_id'] = $user_id;
+            // User Links — keys match ACF field names registered in StarmusPostTypeLoader.
+            $mapped['starmus_copyright_licensor'] = $user_id;
+            $mapped['starmus_authorized_signatory'] = $user_id;
 
             // Dates — UTC only (gmdate). Ref: DVE Alignment v2.0 §5 Step 4 + F-08
             $mapped['sparx_aiwa_date_created'] = empty($data['date_created'])
@@ -281,9 +281,10 @@ class StarmusSchemaMapper
             return [];
         }
 
+        // Keys MUST match the ACF field names registered in StarmusPostTypeLoader.
         return [
-            'copyright_licensor' => $user_id,
-            'authorized_user_id' => $user_id,
+            'starmus_copyright_licensor'  => $user_id,
+            'starmus_authorized_signatory' => $user_id,
         ];
     }
 

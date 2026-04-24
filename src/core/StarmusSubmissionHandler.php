@@ -812,8 +812,9 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
                 'sparx_tax_language',
                 'sparx_tax_dialect',
                 // User IDs — already persisted via extract_user_ids() loop above.
-                'copyright_licensor',
-                'authorized_user_id',
+                // Keys match ACF registrations (starmus_copyright_licensor / starmus_authorized_signatory).
+                'starmus_copyright_licensor',
+                'starmus_authorized_signatory',
                 // Submission ID — persisted explicitly below.
                 'sparx_sparxstar_signatory_submission_id',
             ];
