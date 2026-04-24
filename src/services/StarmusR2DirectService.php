@@ -186,8 +186,45 @@ final class StarmusR2DirectService implements IStarmusStorageService
      */
     public function getAfricaEstimates(string $file_path): array
     {
-        $size_mb = filesize($file_path) / (1024 * 1024);
+        if (! is_file($file_path) || ! is_readable($file_path)) {
+            \error_log(
+                \sprintf(
+                    '%s: Unable to estimate Africa bandwidth savings for unreadable or missing file: %s',
+                    __METHOD__,
+                    $file_path
+                )
+            );
 
+            return [
+                'original_mb' => 0.0,
+                'africa_2g_mb' => 0.0,
+                'cost_savings_usd' => 0.0,
+                'bandwidth_savings' => '0%',
+                'message' => 'File is missing or unreadable.',
+            ];
+        }
+
+        $size_bytes = filesize($file_path);
+
+        if ($size_bytes === false) {
+            \error_log(
+                \sprintf(
+                    '%s: filesize() failed while estimating Africa bandwidth savings for file: %s',
+                    __METHOD__,
+                    $file_path
+                )
+            );
+
+            return [
+                'original_mb' => 0.0,
+                'africa_2g_mb' => 0.0,
+                'cost_savings_usd' => 0.0,
+                'bandwidth_savings' => '0%',
+                'message' => 'Unable to determine file size.',
+            ];
+        }
+
+        $size_mb = $size_bytes / (1024 * 1024);
         return [
             'original_mb' => round($size_mb, 2),
             'africa_2g_mb' => round($size_mb * 0.15, 2),
