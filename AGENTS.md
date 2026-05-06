@@ -17,7 +17,7 @@ Failure to follow these rules is considered an error.
 
 - **PHP**: 8.2 or higher
 
-- **WordPress**: 6.8 or higher
+- **WordPress**: 6.9 or higher
 
 - **Environment**: WordPress Multisite, production, shared infrastructure
 
