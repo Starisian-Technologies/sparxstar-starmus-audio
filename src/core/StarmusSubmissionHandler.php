@@ -180,7 +180,10 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
             // PHP Runtime Error Trap
             set_error_handler(
                 function ($severity, string $message, $file, $line): false {
-                    error_log(\sprintf('[STARMUS PHP] %s in %s:%s', $message, $file, $line));
+                    StarmusLogger::warning(
+                        \sprintf('%s in %s:%s', $message, $file, $line),
+                        ['component' => 'StarmusSubmissionHandler', 'severity' => $severity]
+                    );
                     return false; // Continue normal error handling
                 }
             );
@@ -399,15 +402,15 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
                 $this->cleanup_chunks_dir($parent_dir);
             }
 
-            error_log('[STARMUS PHP] Creating attachment from: ' . $destination);
+            StarmusLogger::info('Creating attachment', ['component' => self::class, 'method' => __METHOD__, 'destination' => $destination]);
             $attachment_id = $this->dal->create_attachment_from_file($destination, $filename);
             if (is_wp_error($attachment_id)) {
-                error_log('[STARMUS PHP] Attachment creation failed: ' . $attachment_id->get_error_message());
+                StarmusLogger::warning('Attachment creation failed', ['component' => self::class, 'method' => __METHOD__, 'error' => $attachment_id->get_error_message()]);
                 unlink($destination);
                 return $attachment_id;
             }
 
-            error_log('[STARMUS PHP] Attachment created: ' . $attachment_id);
+            StarmusLogger::info('Attachment created', ['component' => self::class, 'method' => __METHOD__, 'attachment_id' => $attachment_id]);
 
             // Update vs Create Logic
             $existing_post_id = isset($form_data['post_id']) ? absint($form_data['post_id']) : (isset($form_data['recording_id']) ? absint($form_data['recording_id']) : 0);
@@ -547,15 +550,15 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
                 return $validation;
             }
 
-            error_log('[STARMUS PHP] Processing fallback upload for key: ' . $file_key);
+            StarmusLogger::info('Processing fallback upload', ['component' => self::class, 'method' => __METHOD__, 'file_key' => $file_key]);
             $result = $this->process_fallback_upload($files_data, $form_data, $file_key);
 
             if (is_wp_error($result)) {
-                error_log('[STARMUS PHP] Fallback upload failed: ' . $result->get_error_message());
+                StarmusLogger::warning('Fallback upload failed', ['component' => self::class, 'method' => __METHOD__, 'error' => $result->get_error_message()]);
                 return $result;
             }
 
-            error_log('[STARMUS PHP] Fallback upload success');
+            StarmusLogger::info('Fallback upload success', ['component' => self::class, 'method' => __METHOD__]);
 
             return [
                 'success' => true,
@@ -728,7 +731,7 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
 
             // Map form data to new schema
             $mapped_data = StarmusSchemaMapper::map_form_data($form_data);
-            error_log('[STARMUS PHP] Mapped form data: ' . json_encode(array_keys($mapped_data)));
+            StarmusLogger::debug('Mapped form data keys', ['component' => self::class, 'method' => __METHOD__, 'keys' => array_keys($mapped_data)]);
 
             // SAVE MAPPED DATA FOR COMPARISON
             update_post_meta($audio_post_id, 'starmus_mapped_submission_data', json_encode($mapped_data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
@@ -759,10 +762,10 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
             // Handle waveform JSON from JavaScript
             if (! empty($form_data['waveform_json'])) {
                 $wf_value = \is_string($form_data['waveform_json']) ? $form_data['waveform_json'] : json_encode($form_data['waveform_json']);
-                error_log('[STARMUS PHP] Saving starmus_waveform_json. Size: ' . \strlen($wf_value));
+                StarmusLogger::debug('Saving waveform JSON', ['component' => self::class, 'method' => __METHOD__, 'size' => \strlen($wf_value)]);
                 $this->update_acf_field('starmus_waveform_json', $wf_value, $audio_post_id);
             } else {
-                error_log('[STARMUS PHP] waveform_json is empty in form_data.');
+                StarmusLogger::debug('waveform_json is empty in form_data', ['component' => self::class, 'method' => __METHOD__]);
             }
 
             // Handle first-pass transcription from JavaScript.
@@ -958,10 +961,10 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
     private function trigger_post_processing(int $post_id, int $attachment_id, array $params): void
     {
         try {
-            error_log('[STARMUS PHP] Triggering post processing for post: ' . $post_id . ', attachment: ' . $attachment_id);
+            StarmusLogger::info('Triggering post processing', ['component' => self::class, 'method' => __METHOD__, 'post_id' => $post_id, 'attachment_id' => $attachment_id]);
             $processor = new StarmusPostProcessingService();
             $result = $processor->process($post_id, $attachment_id, $params);
-            error_log('[STARMUS PHP] Post processing result: ' . ($result ? 'SUCCESS' : 'FAILED'));
+            StarmusLogger::info('Post processing result', ['component' => self::class, 'method' => __METHOD__, 'result' => $result ? 'SUCCESS' : 'FAILED']);
 
             if (! $result && ! wp_next_scheduled('starmus_cron_process_pending_audio', [$post_id, $attachment_id])) {
                 StarmusLogger::log(
@@ -975,7 +978,6 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
                 wp_schedule_single_event(time() + 60, 'starmus_cron_process_pending_audio', [$post_id, $attachment_id]);
             }
         } catch (Throwable $throwable) {
-            error_log('[STARMUS PHP] Post processing trigger failed: ' . $throwable->getMessage());
             StarmusLogger::log(
                 $throwable,
                 [
