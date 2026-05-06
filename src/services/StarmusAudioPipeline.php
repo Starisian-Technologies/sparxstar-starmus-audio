@@ -29,7 +29,7 @@ final class StarmusAudioPipeline
      * Defaults to StarmusR2DirectService when not explicitly provided.
      * Ref: Tech Spec v1.0 F-02, CS §0.7.
      */
-    private ?IStarmusStorageService $r2_service = null;
+    private ?IStarmusStorageService $storage_service = null;
 
     /**
      * @param IStarmusStorageService|null $storage_service Optional storage service.
@@ -42,7 +42,7 @@ final class StarmusAudioPipeline
         try {
             $this->id3_service = new StarmusEnhancedId3Service();
             $this->ffmpeg_service = new StarmusFFmpegService($this->id3_service);
-            $this->r2_service = $storage_service ?? new StarmusR2DirectService($this->id3_service);
+            $this->storage_service = $storage_service ?? new StarmusR2DirectService($this->id3_service);
         } catch (Throwable $throwable) {
             StarmusLogger::log($throwable);
         }
@@ -91,8 +91,8 @@ final class StarmusAudioPipeline
             // to storage, and removes local temp files. The default StarmusR2DirectService
             // implements Africa-optimised encoding. Alternative provider implementations that do
             // not support this optimisation must return []. Ref: Tech Spec v1.0 F-05.
-            if ($this->r2_service !== null) {
-                $r2_results = $this->r2_service->processAfricaAudio($file_path, $post_id);
+            if ($this->storage_service !== null) {
+                $r2_results = $this->storage_service->processAfricaAudio($file_path, $post_id);
                 if ($r2_results !== [] && ! isset($r2_results['message'])) {
                     $results['web_versions'] = $r2_results;
                 }

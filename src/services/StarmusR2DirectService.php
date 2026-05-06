@@ -188,12 +188,12 @@ final class StarmusR2DirectService implements IStarmusStorageService
     public function getAfricaEstimates(string $file_path): array
     {
         if (! is_file($file_path) || ! is_readable($file_path)) {
-            \error_log(
-                \sprintf(
-                    '%s: Unable to estimate Africa bandwidth savings for unreadable or missing file: %s',
-                    __METHOD__,
-                    $file_path
-                )
+            StarmusLogger::warning(
+                'Unable to estimate Africa bandwidth savings: file is missing or unreadable.',
+                [
+                    'method' => __METHOD__,
+                    'file_path' => $file_path,
+                ]
             );
 
             return [
@@ -208,12 +208,12 @@ final class StarmusR2DirectService implements IStarmusStorageService
         $size_bytes = filesize($file_path);
 
         if ($size_bytes === false) {
-            \error_log(
-                \sprintf(
-                    '%s: filesize() failed while estimating Africa bandwidth savings for file: %s',
-                    __METHOD__,
-                    $file_path
-                )
+            StarmusLogger::warning(
+                'Unable to estimate Africa bandwidth savings: filesize() failed.',
+                [
+                    'method' => __METHOD__,
+                    'file_path' => $file_path,
+                ]
             );
 
             return [
