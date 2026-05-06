@@ -1,6 +1,11 @@
 Copilot Instructions --- Starmus Audio Recorder
 ---------------------------------------------
 
+- [Technical Specificaton](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/blob/main/Starmus_Tech_Spec_v1.0%20(1).pdf)
+- Read everytime [AGENTS.md](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/blob/main/AGENTS.md)
+- [PAM-002](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/blob/main/PAM-002.md) integrity standard
+- [DVE Alignment](https://github.com/Starisian-Technologies/sparxstar-starmus-audio/blob/main/Starmus_DVE_Alignment_v2.0.pdf)
+
 **(Hard-Enforced Engineering Specification)**
 
 ### Purpose
