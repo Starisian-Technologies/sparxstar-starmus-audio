@@ -71,7 +71,16 @@ final class StarmusR2DirectService implements IStarmusStorageService
                 'Metadata' => $metadata,
             ]);
 
-            return trailingslashit($this->public_endpoint) . $key;
+            $public_endpoint = trim($this->public_endpoint);
+            if ($public_endpoint === '') {
+                StarmusLogger::error(
+                    'Storage upload succeeded but no public endpoint is configured',
+                    ['key' => $key, 'bucket' => $this->bucket]
+                );
+                return null;
+            }
+
+            return trailingslashit($public_endpoint) . ltrim($key, '/');
         } catch (Exception) {
             StarmusLogger::error('Storage upload failed', ['key' => $key]);
             return null;
