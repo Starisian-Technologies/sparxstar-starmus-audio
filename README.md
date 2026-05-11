@@ -67,7 +67,7 @@ Starmus operates at **Briefcase level (Layer 1)** — group-level acquisition go
 
 | Requirement | Minimum |
 |---|---|
-| WordPress | 6.8 |
+| WordPress | 6.9 |
 | PHP | 8.2 (strict types) |
 | Database | MariaDB / MySQL (via WordPress) |
 | Storage | Cloudflare R2 (primary) or AWS S3 (backup) |
