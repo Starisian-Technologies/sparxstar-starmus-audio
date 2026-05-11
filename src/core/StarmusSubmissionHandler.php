@@ -843,8 +843,10 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
 
             // File attachments — override audio_files_originals with the WP attachment ID when present.
             if ($attachment_id !== 0) {
-                $this->update_acf_field('sparx_sparxstar_original_source', $attachment_id, $audio_post_id);
-                $this->update_acf_field('sparx_sparxstar_audio_files_originals', [$attachment_id], $audio_post_id);
+                // Canonical sparx_sparxstar_* keys are not registered ACF fields yet, so persist
+                // them directly as post meta instead of routing through update_acf_field().
+                update_post_meta($audio_post_id, 'sparx_sparxstar_original_source', (int) $attachment_id);
+                update_post_meta($audio_post_id, 'sparx_sparxstar_audio_files_originals', [(int) $attachment_id]);
             }
 
             // Additional Group D fields
