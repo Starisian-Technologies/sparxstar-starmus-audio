@@ -853,7 +853,11 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
             }
 
             if (isset($mapped_data['sparx_sparxstar_signatory_submission_id'])) {
-                $this->update_acf_field('sparx_sparxstar_signatory_submission_id', sanitize_text_field($mapped_data['sparx_sparxstar_signatory_submission_id']), $audio_post_id);
+                update_post_meta(
+                    $audio_post_id,
+                    'sparx_sparxstar_signatory_submission_id',
+                    sanitize_text_field((string) $mapped_data['sparx_sparxstar_signatory_submission_id'])
+                );
             }
 
             // Handle taxonomies through mapped data.
