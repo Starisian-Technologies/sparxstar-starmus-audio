@@ -500,7 +500,8 @@ function initRecorder(store, instanceId) {
         try {
             // Validate bootstrap mode BEFORE requesting microphone access.
             // Per the bootstrap contract, missing or invalid mode is a hard error — not a silent
-            // fallback. Validating here ensures no mic prompt is shown when bootstrap is absent.
+            // fallback. Validating here ensures the start-recording path does not trigger a mic
+            // prompt when STARMUS_BOOTSTRAP.mode is absent or invalid.
             // Ref: Tech Spec v1.0 F-04, STARMUS_BOOTSTRAP invariant.
             const VALID_MODES = { production: 120000, development: 180000, draft: 300000 };
             const bootstrapMode = window.STARMUS_BOOTSTRAP ? window.STARMUS_BOOTSTRAP.mode : null;
