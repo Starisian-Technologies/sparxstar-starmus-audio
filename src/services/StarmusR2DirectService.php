@@ -71,16 +71,7 @@ final class StarmusR2DirectService implements IStarmusStorageService
                 'Metadata' => $metadata,
             ]);
 
-            $public_endpoint = trim($this->public_endpoint);
-            if ($public_endpoint === '') {
-                StarmusLogger::error(
-                    'Storage upload succeeded but no public endpoint is configured',
-                    ['key' => $key, 'bucket' => $this->bucket]
-                );
-                return null;
-            }
-
-            return trailingslashit($public_endpoint) . ltrim($key, '/');
+            return trailingslashit($this->public_endpoint) . ltrim($key, '/');
         } catch (Exception) {
             StarmusLogger::error('Storage upload failed', ['key' => $key]);
             return null;
@@ -255,9 +246,13 @@ final class StarmusR2DirectService implements IStarmusStorageService
             throw new RuntimeException('STARMUS_R2_SECRET_KEY is not defined or is empty.');
         }
 
+        if (! \defined('STARMUS_R2_ENDPOINT') || STARMUS_R2_ENDPOINT === '') {
+            throw new RuntimeException('STARMUS_R2_ENDPOINT is not defined or is empty.');
+        }
+
         $this->bucket = \defined('STARMUS_R2_BUCKET') ? STARMUS_R2_BUCKET : 'starmus-audio';
         $account_id = STARMUS_R2_ACCOUNT_ID;
-        $this->public_endpoint = \defined('STARMUS_R2_ENDPOINT') ? STARMUS_R2_ENDPOINT : '';
+        $this->public_endpoint = STARMUS_R2_ENDPOINT;
 
         $this->storage_client = new S3Client([
             'version' => 'latest',
