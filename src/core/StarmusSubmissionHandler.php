@@ -769,10 +769,10 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
             }
 
             // Handle first-pass transcription from JavaScript.
-            // Stored to starmus_transcription_text ACF field; outside the mapper pipeline.
+            // Stored to sparx_sparxstar_transcription_text ACF field; outside the mapper pipeline.
             // See StarmusSchemaMapper::FIELD_MAP §3.7 for rationale.
             if (! empty($form_data['transcription'])) {
-                $this->update_acf_field('starmus_transcription_text', sanitize_textarea_field($form_data['transcription']), $audio_post_id);
+                $this->update_acf_field('sparx_sparxstar_transcription_text', sanitize_textarea_field($form_data['transcription']), $audio_post_id);
             }
 
             if (! empty($form_data['transcription_json'])) {

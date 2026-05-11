@@ -104,6 +104,7 @@ $FIELD_MAP = [
     'starmus_environment_data'      => 'sparx_sparxstar_environment_data',
 
     // §3.7 Transcription & Translation (JSON / hashes only — text is in post_content)
+    'starmus_transcription_text'    => 'sparx_sparxstar_transcription_text',
     'starmus_transcription_json'    => 'sparx_sparxstar_transcription_json',
     'starmus_transcription_hash'    => 'sparx_sparxstar_transcription_hash',
     'starmus_translation_hash'      => 'sparx_sparxstar_translation_hash',

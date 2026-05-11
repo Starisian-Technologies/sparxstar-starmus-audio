@@ -139,7 +139,7 @@ class StarmusSchemaMapper
         // -- Transcription & Translation (§3.7) --
         // NOTE: 'transcription' (plain text) is intentionally absent from this map.
         // StarmusSubmissionHandler::save_all_metadata() persists transcription text directly to
-        // the 'starmus_transcription_text' ACF field outside the mapper pipeline. Passing a
+        // the 'sparx_sparxstar_transcription_text' ACF field outside the mapper pipeline. Passing a
         // 'transcription' key through map_form_data() will silently drop the value. The DAL
         // method StarmusAudioDAL::create_transcription_post() exists for creating dedicated
         // transcription posts when the full DVE §3.7 post-type workflow is adopted. Same note
