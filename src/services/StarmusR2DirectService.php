@@ -246,13 +246,19 @@ final class StarmusR2DirectService implements IStarmusStorageService
             throw new RuntimeException('STARMUS_R2_SECRET_KEY is not defined or is empty.');
         }
 
-        if (! \defined('STARMUS_R2_ENDPOINT') || STARMUS_R2_ENDPOINT === '') {
+        if (! \defined('STARMUS_R2_ENDPOINT')) {
+            throw new RuntimeException('STARMUS_R2_ENDPOINT is not defined or is empty.');
+        }
+        // Read via constant() so static analysis cannot infer the literal value; this
+        // preserves the empty-string guard when wp-config.php defines the constant as ''.
+        $r2_endpoint = (string) \constant('STARMUS_R2_ENDPOINT');
+        if ($r2_endpoint === '') {
             throw new RuntimeException('STARMUS_R2_ENDPOINT is not defined or is empty.');
         }
 
         $this->bucket = \defined('STARMUS_R2_BUCKET') ? STARMUS_R2_BUCKET : 'starmus-audio';
         $account_id = STARMUS_R2_ACCOUNT_ID;
-        $this->public_endpoint = STARMUS_R2_ENDPOINT;
+        $this->public_endpoint = $r2_endpoint;
 
         $this->storage_client = new S3Client([
             'version' => 'latest',
