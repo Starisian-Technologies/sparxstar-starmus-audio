@@ -328,6 +328,15 @@ class OfflineQueue {
             debugLog("[Offline] Battery critical — deferring queue processing");
             return;
         }
+
+        // Defer uploads on slow-2g or when the OS data-saver flag is active.
+        // Both conditions indicate the user is on a metered/expensive connection,
+        // common in African markets where per-MB costs are high.
+        const _conn = sparxstarIntegration.getConnection?.();
+        if (_conn?.effectiveType === "slow-2g" || _conn?.saveData === true) {
+            debugLog("[Offline] Slow network or data saver active — deferring queue processing");
+            return;
+        }
         this.isProcessing = true;
 
         try {
