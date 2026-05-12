@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\core`
 
-**File:** `/workspaces/starmus-audio-recorder/src/core/StarmusSettings.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/core/StarmusSettings.php`
 
 ## Description
 
@@ -54,7 +54,7 @@ use Throwable;
 use function trailingslashit;
 use function update_option;
 
-if (! \defined('ABSPATH')) {
+if ( ! \defined('ABSPATH')) {
     exit;
 }
 
@@ -125,7 +125,6 @@ Computed once and reused throughout the request lifecycle.
 Constructor - Initializes settings and primes caches.
 Loads default settings, fetches current settings from database,
 and registers WordPress hooks for MIME type validation.
-@return void
 
 ### `get()`
 

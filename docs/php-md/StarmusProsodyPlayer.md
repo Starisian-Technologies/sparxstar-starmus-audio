@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\frontend`
 
-**File:** `/workspaces/starmus-audio-recorder/src/frontend/StarmusProsodyPlayer.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/frontend/StarmusProsodyPlayer.php`
 
 ## Description
 

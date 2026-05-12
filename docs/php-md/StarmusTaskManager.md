@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\admin`
 
-**File:** `/workspaces/starmus-audio-recorder/src/admin/StarmusTaskManager.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/admin/StarmusTaskManager.php`
 
 ## Description
 
@@ -26,7 +26,7 @@ namespace Starisian\Sparxstar\Starmus\admin;
 
 use WP_Query;
 
-if (! \defined('ABSPATH')) {
+if ( ! \defined('ABSPATH')) {
     exit;
 }
 

@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\data`
 
-**File:** `/workspaces/starmus-audio-recorder/src/data/StarmusJobSearchRepository.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/data/StarmusJobSearchRepository.php`
 
 ## Description
 
@@ -35,8 +35,8 @@ final readonly class StarmusJobSearchRepository
 
     public function find(string $job_id): ?StarmusJob
     {
-        $row = $this->db->get_row($this->db->prepare(\sprintf('SELECT * FROM %s WHERE job_id = %%s', $this->table_name), $job_id));
-        if (! $row) {
+        $row = $this->db->get_row($this->db->prepare(\sprintf('SELECT id, job_id, post_id, status, attempts, file_path, error_message, result, created_at, finished_at FROM %s WHERE job_id = %%s', $this->table_name), $job_id));
+        if ( ! $row) {
             return null;
         }
 

@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\api`
 
-**File:** `/workspaces/starmus-audio-recorder/src/api/StarmusDataRESTHandler.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/api/StarmusDataRESTHandler.php`
 
 ## Description
 

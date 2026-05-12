@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\helpers`
 
-**File:** `/workspaces/starmus-audio-recorder/src/helpers/StarmusUIHelper.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/helpers/StarmusUIHelper.php`
 
 ## Description
 
@@ -29,7 +29,7 @@ Starmus UI Helper Functions
 @since 1.0.0
 /
 
-if (! \defined('ABSPATH')) {
+if ( ! \defined('ABSPATH')) {
     exit();
 }
 

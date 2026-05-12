@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\includes`
 
-**File:** `/workspaces/starmus-audio-recorder/src/includes/StarmusTusdHookHandler.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/includes/StarmusTusdHookHandler.php`
 
 ## Description
 

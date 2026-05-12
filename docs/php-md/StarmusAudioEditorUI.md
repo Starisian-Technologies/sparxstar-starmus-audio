@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\frontend`
 
-**File:** `/workspaces/starmus-audio-recorder/src/frontend/StarmusAudioEditorUI.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/frontend/StarmusAudioEditorUI.php`
 
 ## Description
 
@@ -48,7 +48,7 @@ use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
 
-if (! \defined('ABSPATH')) {
+if ( ! \defined('ABSPATH')) {
     exit;
 }
 

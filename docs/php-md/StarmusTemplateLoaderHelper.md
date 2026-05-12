@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\helpers`
 
-**File:** `/workspaces/starmus-audio-recorder/src/helpers/StarmusTemplateLoaderHelper.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/helpers/StarmusTemplateLoaderHelper.php`
 
 ## Description
 
@@ -26,7 +26,7 @@ namespace Starisian\Sparxstar\Starmus\helpers;
 
 use Throwable;
 
-if (! \defined('ABSPATH')) {
+if ( ! \defined('ABSPATH')) {
     exit;
 }
 
