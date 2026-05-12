@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\helpers`
 
-**File:** `/workspaces/starmus-audio-recorder/src/helpers/StarmusLogger.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/helpers/StarmusLogger.php`
 
 ## Description
 
@@ -23,7 +23,7 @@
 @license Starisian Technolgoies Proprietary License
 /
 
-if (! \defined('ABSPATH')) {
+if ( ! \defined('ABSPATH')) {
     exit();
 }
 

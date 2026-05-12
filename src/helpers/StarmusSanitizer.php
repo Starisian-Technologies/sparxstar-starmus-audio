@@ -105,10 +105,12 @@ class StarmusSanitizer
         // Use SchemaMapper for consistent field mapping (New Schema)
         $mapped_data = StarmusSchemaMapper::map_form_data($form_data);
 
-        // --- LEGACY MAPPING (PRESERVED) ---
+        // Internal meta keys (_starmus_*) are preserved for backward compatibility with older code
+        // paths that read the underscored-prefix namespace. They are derived from canonical DVE
+        // field names (sparx_sparxstar_*) — not legacy source values.
 
-        if ( ! empty($mapped_data['dc_creator'])) {
-            $meta['_starmus_title'] = sanitize_text_field($mapped_data['dc_creator']);
+        if ( ! empty($mapped_data['sparx_sparxstar_legal_name'])) {
+            $meta['_starmus_title'] = sanitize_text_field($mapped_data['sparx_sparxstar_legal_name']);
         }
 
         if ( ! empty($form_data['description'])) {

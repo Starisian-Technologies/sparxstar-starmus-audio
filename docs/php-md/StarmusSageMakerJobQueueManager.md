@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\admin`
 
-**File:** `/workspaces/starmus-audio-recorder/src/admin/StarmusSageMakerJobQueueManager.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/admin/StarmusSageMakerJobQueueManager.php`
 
 ## Description
 

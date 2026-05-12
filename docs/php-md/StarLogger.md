@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\helpers\logger`
 
-**File:** `/workspaces/starmus-audio-recorder/src/helpers/logger/StarLogger.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/helpers/logger/StarLogger.php`
 
 ## Description
 

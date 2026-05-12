@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\cron`
 
-**File:** `/workspaces/starmus-audio-recorder/src/cron/StarmusCron.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/cron/StarmusCron.php`
 
 ## Description
 
@@ -46,7 +46,7 @@ use function wp_next_scheduled;
 use function wp_schedule_event;
 use function wp_unschedule_event;
 
-if (! \defined('ABSPATH')) {
+if ( ! \defined('ABSPATH')) {
     exit;
 }
 
@@ -101,13 +101,13 @@ Executes the full pipeline asynchronously.
 
 Remove stale temp upload files (>24h old).
 
-### `starmus_activate()`
+### `starmusActivate()`
 
 **Visibility:** `public`
 
 Schedule recurring cleanup on plugin activation.
 
-### `starmus_deactivate()`
+### `starmusDeactivate()`
 
 **Visibility:** `public`
 

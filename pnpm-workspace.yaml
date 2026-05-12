@@ -1,5 +1,6 @@
 ignoredBuiltDependencies:
   - fs-ext
+  - fs-ext-extra-prebuilt
 
 onlyBuiltDependencies:
   - core-js

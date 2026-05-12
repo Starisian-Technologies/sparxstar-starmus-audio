@@ -635,11 +635,16 @@ final class StarmusAudioRecorder
      *
      * Called via 'admin_notices' action hook in admin context only.
      *
+     * NOTE: The current_user_can('manage_options') check below is a UI display gate only —
+     * it controls whether error notices are rendered in the admin. It is not a governed action
+     * and does not require Sirus delegation. Ref: Tech Spec v1.0 F-13.
+     *
      * @since 0.1.0
      */
     public function displayRuntimeErrorNotice(): void
     {
         try {
+            // UI display gate only — not a governed action. Sirus delegation not required.
             if ($this->runtimeErrors === [] || ! current_user_can('manage_options')) {
                 return;
             }

@@ -1,8 +1,10 @@
 /**
  * @file starmus-sparxstar-integration.js
- * @version 7.1.5-FINAL
+ * @version 7.2.0
  * @description Integration layer between Sparxstar UEC and Starmus Recorder.
  * Maps environment profiles to recorder tiers and manages data caching.
+ * Includes battery status monitoring and network-aware configuration for
+ * African mobile markets (2G/3G-first design).
  */
 
 "use strict";
@@ -116,7 +118,181 @@
     }
 })(typeof jQuery !== "undefined" ? jQuery : null);
 
-/* 2. SPARXSTAR INTEGRATION OBJECT */
+/* 2. BATTERY STATUS CACHE */
+
+/**
+ * Battery level (0–1) below which uploads are deferred when not charging.
+ * Chosen at 20 % to give enough headroom for critical device operations.
+ *
+ * @private
+ * @constant {number}
+ */
+const BATTERY_CRITICAL_LEVEL = 0.2;
+
+/**
+ * Cached battery state populated by {@link _readBattery}.
+ * Defaults to a safe "full and charging" assumption so that
+ * isBatteryCritical() returns false before the API responds.
+ *
+ * @private
+ * @type {{ level: number, charging: boolean, lastUpdated: number }}
+ */
+const _batteryCache = { level: 1, charging: true, lastUpdated: 0 };
+
+/**
+ * Guards against multiple simultaneous or repeated calls to _readBattery().
+ * Set synchronously at the top of _readBattery() so re-entrant calls from
+ * isBatteryCritical() (which can fire before the first getBattery() promise
+ * resolves) never attach duplicate event listeners.
+ *
+ * @private
+ * @type {boolean}
+ */
+let _batteryReadStarted = false;
+
+/**
+ * Subscribes to the Battery Status API and keeps _batteryCache current.
+ * Idempotent: sets _batteryReadStarted synchronously so concurrent or
+ * repeated calls are no-ops. Attaches `levelchange` and `chargingchange`
+ * event listeners so the cache stays fresh without polling. Safe to call
+ * in browsers that lack the Battery Status API.
+ *
+ * @private
+ * @async
+ * @returns {Promise<void>}
+ */
+async function _readBattery() {
+    if (_batteryReadStarted || !("getBattery" in navigator)) {
+        return;
+    }
+    _batteryReadStarted = true;
+    try {
+        const battery = await navigator.getBattery();
+        _batteryCache.level = battery.level;
+        _batteryCache.charging = battery.charging;
+        _batteryCache.lastUpdated = Date.now();
+
+        battery.addEventListener("levelchange", () => {
+            _batteryCache.level = battery.level;
+            _batteryCache.lastUpdated = Date.now();
+        });
+        battery.addEventListener("chargingchange", () => {
+            _batteryCache.charging = battery.charging;
+            _batteryCache.lastUpdated = Date.now();
+        });
+    } catch (e) {
+        void e; // Battery API unavailable — safe defaults already set above.
+    }
+}
+
+/* 3. NETWORK HELPERS */
+
+/**
+ * Per-connection upload chunk sizes optimised for African network tiers.
+ * Values are in bytes; slow-2g is deliberately tiny to avoid stalling.
+ *
+ * @private
+ * @type {Object<string, number>}
+ */
+const _NETWORK_CHUNK_SIZES = {
+    "slow-2g": 64 * 1024,
+    "2g": 128 * 1024,
+    "3g": 256 * 1024,
+    "4g": 512 * 1024,
+};
+
+/**
+ * Resolves the live Network Information object, with vendor prefix fallbacks.
+ *
+ * @private
+ * @returns {NetworkInformation|null}
+ */
+function _getConnection() {
+    return navigator.connection || navigator.mozConnection || navigator.webkitConnection || null;
+}
+
+/**
+ * Returns the effective network type string from the Network Information API,
+ * or 'unknown' when the API is unavailable.
+ *
+ * @private
+ * @returns {string}
+ */
+function _getEffectiveType() {
+    return _getConnection()?.effectiveType || "unknown";
+}
+
+/**
+ * Detects the browser capability tier when no Sparxstar environment data is
+ * present. This mirrors the authoritative fallback logic described in
+ * AUDIO-TIER-STANDARDS.md: C → no MediaRecorder, B → no AudioContext, A → full.
+ *
+ * @private
+ * @returns {'A'|'B'|'C'}
+ */
+function _detectTier() {
+    if (
+        typeof window.MediaRecorder === "undefined" ||
+        typeof navigator.mediaDevices?.getUserMedia !== "function"
+    ) {
+        return "C";
+    }
+    if (
+        typeof window.AudioContext === "undefined" &&
+        typeof window.webkitAudioContext === "undefined"
+    ) {
+        return "B";
+    }
+    return "A";
+}
+
+/**
+ * Resolves the upload chunk size based on the live effective network type.
+ * Falls back to 512 KB (4G equivalent) when the network type is unknown or
+ * not present in the lookup table.
+ *
+ * @private
+ * @param {string} effectiveType - Value from NetworkInformation.effectiveType
+ * @returns {number} Chunk size in bytes
+ */
+function _resolveChunkSize(effectiveType) {
+    return _NETWORK_CHUNK_SIZES[effectiveType] ?? 512 * 1024;
+}
+
+/**
+ * Per-country approximate mobile data cost per MB (USD) for African markets.
+ * Costs are derived from prepaid 1 GB bundle prices divided by 1024.
+ *
+ * Sources: GSMA Intelligence, Alliance for Affordable Internet (A4AI) 2024.
+ * Review and update these figures annually.
+ *
+ * @private
+ * @type {Object<string, number>}
+ */
+const _COUNTRY_COST_PER_MB = {
+    BF: 0.17, // Burkina Faso
+    CD: 0.18, // Dem. Rep. Congo
+    CI: 0.1, // Côte d'Ivoire
+    CM: 0.13, // Cameroon
+    ET: 0.11, // Ethiopia
+    GH: 0.08, // Ghana
+    GM: 0.15, // Gambia
+    KE: 0.05, // Kenya
+    MG: 0.11, // Madagascar
+    ML: 0.18, // Mali
+    MW: 0.14, // Malawi
+    MZ: 0.12, // Mozambique
+    NG: 0.06, // Nigeria
+    RW: 0.07, // Rwanda
+    SN: 0.1, // Senegal
+    TZ: 0.09, // Tanzania
+    UG: 0.12, // Uganda
+    ZA: 0.04, // South Africa
+    ZM: 0.09, // Zambia
+    ZW: 0.16, // Zimbabwe
+};
+
+/* 4. SPARXSTAR INTEGRATION OBJECT */
 /**
  * Provides integration hooks for Sparxstar and Starmus components.
  *
@@ -131,29 +307,92 @@ const sparxstarIntegration = {
      * @type {boolean}
      */
     isAvailable: true,
+
     /**
-     * Initializes integration and resolves environment data.
+     * Initializes integration: starts battery monitoring and resolves
+     * current environment data.
      *
      * @function init
      * @returns {Promise<Object>} Resolved environment payload
      */
     init: () => {
+        _readBattery();
         return Promise.resolve(sparxstarIntegration.getEnvironmentData());
     },
+
     /**
-     * Returns a default environment data object for compatibility.
+     * Returns a capability-detected environment data object.
+     * Tier is derived from `window.MediaRecorder` / `AudioContext` availability
+     * (see AUDIO-TIER-STANDARDS.md) and network settings are sourced from the
+     * Network Information API when available.
      *
      * @function getEnvironmentData
-     * @returns {Object} Default environment payload
+     * @returns {{tier: ('A'|'B'|'C'), recordingSettings: {uploadChunkSize: number}, network: {type: string, downlink: number, rtt: number, saveData: boolean}}}
      */
     getEnvironmentData: () => {
-        // Return a default object so the TUS script doesn't crash
+        const conn = _getConnection();
+        const effectiveType = _getEffectiveType();
+        const tier = _detectTier();
+
         return {
-            tier: window.MediaRecorder ? "A" : "C",
-            recordingSettings: { uploadChunkSize: 524288 },
-            network: { type: "unknown" },
+            tier,
+            recordingSettings: {
+                uploadChunkSize: _resolveChunkSize(effectiveType),
+            },
+            network: {
+                type: effectiveType,
+                downlink: conn?.downlink ?? 0.5,
+                rtt: conn?.rtt ?? 300,
+                saveData: conn?.saveData ?? false,
+            },
         };
     },
+
+    /**
+     * Returns the live Network Information object (with vendor prefix fallbacks),
+     * or null when the API is unavailable. Exposed so other modules can read
+     * effectiveType and saveData without duplicating the vendor-prefix logic.
+     *
+     * @function getConnection
+     * @returns {NetworkInformation|null}
+     */
+    getConnection: () => _getConnection(),
+
+    /**
+     * Returns true when the battery level is below 20 % and not charging.
+     * Reads the live cache maintained by _readBattery(). Triggers battery
+     * monitoring lazily on first call via the idempotent _readBattery(), so
+     * the check works correctly even when init() has not been invoked. The
+     * current call returns false (safe default: full and charging) while the
+     * async getBattery() subscription resolves; subsequent calls reflect the
+     * real battery state.
+     *
+     * @function isBatteryCritical
+     * @returns {boolean}
+     */
+    isBatteryCritical: () => {
+        if (!_batteryReadStarted) {
+            _readBattery();
+        }
+        return _batteryCache.level < BATTERY_CRITICAL_LEVEL && !_batteryCache.charging;
+    },
+
+    /**
+     * Returns the approximate mobile data cost per MB (USD) for a given
+     * ISO 3166-1 alpha-2 country code. Falls back to the Gambia default
+     * (0.15 USD/MB) for unknown codes.
+     *
+     * @function getDataCostPerMb
+     * @param {string} countryCode - ISO 3166-1 alpha-2 country code (e.g. 'GM')
+     * @returns {number} Cost in USD per MB
+     */
+    getDataCostPerMb: (countryCode) => {
+        const code = typeof countryCode === "string" ? countryCode.trim().toUpperCase() : "";
+        return Object.prototype.hasOwnProperty.call(_COUNTRY_COST_PER_MB, code)
+            ? _COUNTRY_COST_PER_MB[code]
+            : 0.15;
+    },
+
     /**
      * Reports integration errors to the console.
      *
@@ -167,5 +406,11 @@ const sparxstarIntegration = {
     },
 };
 
-// This line fixes the Rollup error
+// Start battery monitoring automatically when this module is imported so the
+// cache is populated as early as possible on all pages (recorder and editor).
+// _readBattery() is idempotent — subsequent calls from init() or
+// isBatteryCritical() are no-ops. The catch is a safety net; the function's
+// internal try-catch already handles all reachable error paths.
+_readBattery().catch(() => {});
+
 export default sparxstarIntegration;

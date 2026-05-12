@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\helpers`
 
-**File:** `/workspaces/starmus-audio-recorder/src/helpers/StarmusSanitizer.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/helpers/StarmusSanitizer.php`
 
 ## Description
 
@@ -48,7 +48,7 @@ use Throwable;
 use function trim;
 use function wp_unslash;
 
-if (! \defined('ABSPATH')) {
+if ( ! \defined('ABSPATH')) {
     exit;
 }
 

@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\data`
 
-**File:** `/workspaces/starmus-audio-recorder/src/data/StarmusJob.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/data/StarmusJob.php`
 
 ## Description
 

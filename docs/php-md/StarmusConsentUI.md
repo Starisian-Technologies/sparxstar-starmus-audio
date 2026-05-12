@@ -2,61 +2,13 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\frontend`
 
-**File:** `/workspaces/starmus-audio-recorder/src/frontend/StarmusConsentUI.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/frontend/StarmusConsentUI.php`
 
 ## Description
 
-Class StarmusConsentUI
-Handles the Frontend UI for the Starmus Consent Form.
-@package Starisian\Sparxstar\Starmus\frontend
+@return array{url: string, version: string}
 
 ## Methods
-
-### `__construct()`
-
-**Visibility:** `public`
-
-Class StarmusConsentUI
-Handles the Frontend UI for the Starmus Consent Form.
-@package Starisian\Sparxstar\Starmus\frontend
-/
-class StarmusConsentUI
-{
-    /**
-StarmusConsentHandler instance.
-/
-    private StarmusConsentHandler $handler;
-
-    /**
-StarmusSettings instance.
-/
-    private StarmusSettings $settings;
-
-    /**
-Constructor.
-@param StarmusConsentHandler $handler Consent handler.
-@param StarmusSettings $settings Plugin settings.
-
-### `register_hooks()`
-
-**Visibility:** `public`
-
-Register hooks.
-
-### `render_shortcode()`
-
-**Visibility:** `public`
-
-Render the shortcode.
-@return string Rendered HTML.
-
-### `handle_submission()`
-
-**Visibility:** `public`
-
-Handle form submission.
-
-## Properties
 
 ---
 

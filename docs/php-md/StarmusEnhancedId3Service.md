@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\services`
 
-**File:** `/workspaces/starmus-audio-recorder/src/services/StarmusEnhancedId3Service.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/services/StarmusEnhancedId3Service.php`
 
 ## Description
 

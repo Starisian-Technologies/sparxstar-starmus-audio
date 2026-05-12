@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\data`
 
-**File:** `/workspaces/starmus-audio-recorder/src/data/StarmusProsodyDAL.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/data/StarmusProsodyDAL.php`
 
 ## Description
 
@@ -51,7 +51,7 @@ use function wp_strip_all_tags;
 
 ;
 
-if (! \defined('ABSPATH')) {
+if ( ! \defined('ABSPATH')) {
     exit;
 }
 

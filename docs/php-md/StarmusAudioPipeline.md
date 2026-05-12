@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\services`
 
-**File:** `/workspaces/starmus-audio-recorder/src/services/StarmusAudioPipeline.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/services/StarmusAudioPipeline.php`
 
 ## Description
 
@@ -12,7 +12,7 @@ Integrates with your existing StarmusSubmissionHandler.
 
 ## Methods
 
-### `processUploadedAudio()`
+### `__construct()`
 
 **Visibility:** `public`
 
@@ -26,20 +26,24 @@ final class StarmusAudioPipeline
 
     private ?StarmusFFmpegService $ffmpeg_service = null;
 
-    private ?StarmusR2DirectService $r2_service = null;
-
-    public function __construct()
-    {
-        try {
-            $this->id3_service = new StarmusEnhancedId3Service();
-            $this->ffmpeg_service = new StarmusFFmpegService($this->id3_service);
-            $this->r2_service = new StarmusR2DirectService($this->id3_service);
-        } catch (Throwable $throwable) {
-            StarmusLogger::log($throwable);
-        }
-    }
+    /**
+Storage service. Typed to IStarmusStorageService so callers can inject any
+S3-compatible provider (Cloudflare R2, AWS S3, test double, etc.).
+Defaults to StarmusR2DirectService when not explicitly provided.
+Ref: Tech Spec v1.0 F-02, CS §0.7.
+/
+    private ?IStarmusStorageService $storage_service = null;
 
     /**
+@param IStarmusStorageService|null $storage_service Optional storage service.
+                                                    When null, a StarmusR2DirectService is constructed using the provider
+                                                    constants defined in wp-config.php. Pass an explicit implementation
+                                                    to override the provider (e.g. for testing or alternative S3 targets).
+
+### `processUploadedAudio()`
+
+**Visibility:** `public`
+
 Process uploaded audio file - call this from your submission handler
 
 ### `starmus_process_audio_pipeline()`
@@ -48,6 +52,8 @@ Process uploaded audio file - call this from your submission handler
 
 Integration hook for StarmusSubmissionHandler
 Add this to your save_all_metadata method:
+
+## Properties
 
 ---
 
