@@ -88,27 +88,15 @@ const uploadCircuitBreaker = new UploadCircuitBreaker();
  */
 // 1. Config
 function getDefaultConfig() {
-    // Get optimized settings from SPARXSTAR if available
+    // Get optimized settings from SPARXSTAR — uploadChunkSize is already
+    // resolved by _resolveChunkSize() in the integration module based on the
+    // live effectiveType, so there is no need to re-implement the vendor-prefix
+    // lookup or the effectiveType → size map here.
     const envData = sparxstarIntegration.getEnvironmentData();
     const settings = envData?.recordingSettings || {};
 
-    // Prefer live Network Information API for real-time adaptation; fall back
-    // to the SPARXSTAR-resolved value, then the hard-coded 512 KB safe default.
-    const conn =
-        navigator.connection || navigator.mozConnection || navigator.webkitConnection || null;
-    const effectiveType = conn?.effectiveType || envData?.network?.type || "unknown";
-
-    const networkChunkSizes = {
-        "slow-2g": 64 * 1024, //  64 KB — critical for EDGE networks
-        "2g": 128 * 1024, // 128 KB
-        "3g": 256 * 1024, // 256 KB
-        "4g": 512 * 1024, // 512 KB
-    };
-
-    const chunkSize = networkChunkSizes[effectiveType] || settings.uploadChunkSize || 512 * 1024;
-
     return {
-        chunkSize,
+        chunkSize: settings.uploadChunkSize || 512 * 1024,
         retryDelays: [0, 5000, 10000, 30000, 60000, 120000, 300000],
         removeFingerprintOnSuccess: true,
         maxChunkRetries: 10,

@@ -234,7 +234,8 @@ function _detectTier() {
 
 /**
  * Resolves the upload chunk size based on the live effective network type.
- * Falls back to the tier-derived default when the network type is unknown.
+ * Falls back to 512 KB (4G equivalent) when the network type is unknown or
+ * not present in the lookup table.
  *
  * @private
  * @param {string} effectiveType - Value from NetworkInformation.effectiveType
@@ -365,7 +366,7 @@ const sparxstarIntegration = {
      * @returns {number} Cost in USD per MB
      */
     getDataCostPerMb: (countryCode) => {
-        const code = typeof countryCode === "string" ? countryCode.toUpperCase() : "";
+        const code = typeof countryCode === "string" ? countryCode.trim().toUpperCase() : "";
         return Object.prototype.hasOwnProperty.call(_COUNTRY_COST_PER_MB, code)
             ? _COUNTRY_COST_PER_MB[code]
             : 0.15;
