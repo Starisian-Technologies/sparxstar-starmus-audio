@@ -346,13 +346,20 @@ const sparxstarIntegration = {
 
     /**
      * Returns true when the battery level is below 20 % and not charging.
-     * Reads the live cache maintained by _readBattery(), making this a
-     * zero-cost synchronous call suitable for hot paths (e.g. processQueue).
+     * Reads the live cache maintained by _readBattery(). Starts battery
+     * monitoring lazily on first call if init() has not yet been invoked,
+     * so the check works correctly on editor pages and other paths that
+     * bypass init(). The current call returns false (safe default: full and
+     * charging) while the async subscription resolves; subsequent calls
+     * reflect the real battery state.
      *
      * @function isBatteryCritical
      * @returns {boolean}
      */
     isBatteryCritical: () => {
+        if (_batteryCache.lastUpdated === 0) {
+            _readBattery();
+        }
         return _batteryCache.level < BATTERY_CRITICAL_LEVEL && !_batteryCache.charging;
     },
 
