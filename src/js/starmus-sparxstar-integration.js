@@ -140,18 +140,32 @@ const BATTERY_CRITICAL_LEVEL = 0.2;
 const _batteryCache = { level: 1, charging: true, lastUpdated: 0 };
 
 /**
+ * Guards against multiple simultaneous or repeated calls to _readBattery().
+ * Set synchronously at the top of _readBattery() so re-entrant calls from
+ * isBatteryCritical() (which can fire before the first getBattery() promise
+ * resolves) never attach duplicate event listeners.
+ *
+ * @private
+ * @type {boolean}
+ */
+let _batteryReadStarted = false;
+
+/**
  * Subscribes to the Battery Status API and keeps _batteryCache current.
- * Attaches `levelchange` and `chargingchange` event listeners so the cache
- * stays fresh without polling. Safe to call in browsers that lack the API.
+ * Idempotent: sets _batteryReadStarted synchronously so concurrent or
+ * repeated calls are no-ops. Attaches `levelchange` and `chargingchange`
+ * event listeners so the cache stays fresh without polling. Safe to call
+ * in browsers that lack the Battery Status API.
  *
  * @private
  * @async
  * @returns {Promise<void>}
  */
 async function _readBattery() {
-    if (!("getBattery" in navigator)) {
+    if (_batteryReadStarted || !("getBattery" in navigator)) {
         return;
     }
+    _batteryReadStarted = true;
     try {
         const battery = await navigator.getBattery();
         _batteryCache.level = battery.level;
@@ -346,18 +360,18 @@ const sparxstarIntegration = {
 
     /**
      * Returns true when the battery level is below 20 % and not charging.
-     * Reads the live cache maintained by _readBattery(). Starts battery
-     * monitoring lazily on first call if init() has not yet been invoked,
-     * so the check works correctly on editor pages and other paths that
-     * bypass init(). The current call returns false (safe default: full and
-     * charging) while the async subscription resolves; subsequent calls
-     * reflect the real battery state.
+     * Reads the live cache maintained by _readBattery(). Triggers battery
+     * monitoring lazily on first call via the idempotent _readBattery(), so
+     * the check works correctly even when init() has not been invoked. The
+     * current call returns false (safe default: full and charging) while the
+     * async getBattery() subscription resolves; subsequent calls reflect the
+     * real battery state.
      *
      * @function isBatteryCritical
      * @returns {boolean}
      */
     isBatteryCritical: () => {
-        if (_batteryCache.lastUpdated === 0) {
+        if (!_batteryReadStarted) {
             _readBattery();
         }
         return _batteryCache.level < BATTERY_CRITICAL_LEVEL && !_batteryCache.charging;
@@ -391,5 +405,11 @@ const sparxstarIntegration = {
         console.warn("[Integration] Error:", msg, data);
     },
 };
+
+// Start battery monitoring automatically when this module is imported so the
+// cache is populated as early as possible on all pages (recorder and editor).
+// _readBattery() is idempotent — subsequent calls from init() or
+// isBatteryCritical() are no-ops.
+_readBattery();
 
 export default sparxstarIntegration;
