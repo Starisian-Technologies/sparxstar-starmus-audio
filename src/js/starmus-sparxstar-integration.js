@@ -409,7 +409,8 @@ const sparxstarIntegration = {
 // Start battery monitoring automatically when this module is imported so the
 // cache is populated as early as possible on all pages (recorder and editor).
 // _readBattery() is idempotent — subsequent calls from init() or
-// isBatteryCritical() are no-ops.
-_readBattery();
+// isBatteryCritical() are no-ops. The catch is a safety net; the function's
+// internal try-catch already handles all reachable error paths.
+_readBattery().catch(() => {});
 
 export default sparxstarIntegration;
