@@ -1,4 +1,4 @@
-![Sparxstar Starmus Audio](https://github.com/user-attachments/assets/c51b26bb-f95f-4d8c-9340-dacdacca5d4f)
+<img width="1280" height="640" alt="SPARXSTAR Starmus" src="https://github.com/user-attachments/assets/e554ab7e-67d8-4b0c-8583-9c108b8bb943" />
 
 # Sparxstar Starmus Audio
 
