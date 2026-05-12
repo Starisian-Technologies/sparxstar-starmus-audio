@@ -257,7 +257,7 @@ function _resolveChunkSize(effectiveType) {
 const _COUNTRY_COST_PER_MB = {
     BF: 0.17, // Burkina Faso
     CD: 0.18, // Dem. Rep. Congo
-    CI: 0.10, // Côte d'Ivoire
+    CI: 0.1, // Côte d'Ivoire
     CM: 0.13, // Cameroon
     ET: 0.11, // Ethiopia
     GH: 0.08, // Ghana
@@ -269,7 +269,7 @@ const _COUNTRY_COST_PER_MB = {
     MZ: 0.12, // Mozambique
     NG: 0.06, // Nigeria
     RW: 0.07, // Rwanda
-    SN: 0.10, // Senegal
+    SN: 0.1, // Senegal
     TZ: 0.09, // Tanzania
     UG: 0.12, // Uganda
     ZA: 0.04, // South Africa

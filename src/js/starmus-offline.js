@@ -18,7 +18,7 @@
 
 import { debugLog } from "./starmus-hooks.js";
 import { uploadWithPriority } from "./starmus-tus.js";
-import sparxstarIntegration from "./starmus-sparxstar-integration.js"; 
+import sparxstarIntegration from "./starmus-sparxstar-integration.js";
 
 /**
  * Configuration object for offline queue behavior.

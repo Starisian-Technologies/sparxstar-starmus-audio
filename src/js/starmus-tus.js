@@ -105,8 +105,7 @@ function getDefaultConfig() {
         "4g": 512 * 1024, // 512 KB
     };
 
-    const chunkSize =
-        networkChunkSizes[effectiveType] || settings.uploadChunkSize || 512 * 1024;
+    const chunkSize = networkChunkSizes[effectiveType] || settings.uploadChunkSize || 512 * 1024;
 
     return {
         chunkSize,

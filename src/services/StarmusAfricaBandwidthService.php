@@ -152,6 +152,7 @@ final class StarmusAfricaBandwidthService
      * country code. Falls back to {@see DEFAULT_COST_PER_MB} for unknown codes.
      *
      * @param string $country_code ISO 3166-1 alpha-2 country code (e.g. 'GM').
+     *
      * @return float Cost in USD per MB.
      */
     public function getCountryCostPerMb(string $country_code): float
@@ -168,8 +169,9 @@ final class StarmusAfricaBandwidthService
      * country. Pass an ISO 3166-1 alpha-2 country code to get a country-specific
      * cost estimate; unknown codes fall back to {@see DEFAULT_COST_PER_MB}.
      *
-     * @param string $file_path    Absolute path to the audio file.
+     * @param string $file_path Absolute path to the audio file.
      * @param string $country_code ISO 3166-1 alpha-2 country code (default: 'GM').
+     *
      * @return array{
      *     size_mb: float,
      *     cost_estimate_usd: float,
@@ -186,18 +188,18 @@ final class StarmusAfricaBandwidthService
             return [];
         }
 
-        $size_mb      = filesize($file_path) / (1024 * 1024);
-        $cost_per_mb  = $this->getCountryCostPerMb($country_code);
+        $size_mb = filesize($file_path) / (1024 * 1024);
+        $cost_per_mb = $this->getCountryCostPerMb($country_code);
         $country_upper = strtoupper(trim($country_code));
 
         return [
-            'size_mb'          => round($size_mb, 2),
+            'size_mb' => round($size_mb, 2),
             'cost_estimate_usd' => round($size_mb * $cost_per_mb, 4),
-            'cost_per_mb_usd'  => $cost_per_mb,
-            'country'          => $country_upper,
+            'cost_per_mb_usd' => $cost_per_mb,
+            'country' => $country_upper,
             'download_time_2g' => round($size_mb / 0.03, 0) . 's', // ~30 KB/s
             'download_time_3g' => round($size_mb / 0.1, 0) . 's',  // ~100 KB/s
-            'recommended'      => $size_mb > 5 ? '2g' : ($size_mb > 2 ? '3g' : 'wifi'),
+            'recommended' => $size_mb > 5 ? '2g' : ($size_mb > 2 ? '3g' : 'wifi'),
         ];
     }
 }
