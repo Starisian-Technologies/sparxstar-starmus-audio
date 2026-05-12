@@ -196,8 +196,8 @@ final class StarmusAfricaBandwidthService
 
         $size_mb       = filesize($file_path) / (1024 * 1024);
         $country_upper = strtoupper(trim($country_code));
-        $cost_per_mb   = self::COUNTRY_COST_PER_MB[$country_upper] ?? self::DEFAULT_COST_PER_MB;
-        $code_known    = isset(self::COUNTRY_COST_PER_MB[$country_upper]);
+        $code_known    = array_key_exists($country_upper, self::COUNTRY_COST_PER_MB);
+        $cost_per_mb   = $code_known ? self::COUNTRY_COST_PER_MB[$country_upper] : self::DEFAULT_COST_PER_MB;
 
         return [
             'size_mb'           => round($size_mb, 2),
