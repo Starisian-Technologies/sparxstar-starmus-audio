@@ -312,7 +312,7 @@ const sparxstarIntegration = {
      * Network Information API when available.
      *
      * @function getEnvironmentData
-     * @returns {{tier: string, recordingSettings: {uploadChunkSize: number}, network: {type: string, downlink: number, rtt: number}}}
+     * @returns {{tier: ('A'|'B'|'C'), recordingSettings: {uploadChunkSize: number}, network: {type: string, downlink: number, rtt: number, saveData: boolean}}}
      */
     getEnvironmentData: () => {
         const conn = _getConnection();
