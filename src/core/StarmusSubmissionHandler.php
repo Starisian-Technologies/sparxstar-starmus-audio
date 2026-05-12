@@ -180,7 +180,10 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
             // PHP Runtime Error Trap
             set_error_handler(
                 function ($severity, string $message, $file, $line): false {
-                    error_log(\sprintf('[STARMUS PHP] %s in %s:%s', $message, $file, $line));
+                    StarmusLogger::warning(
+                        \sprintf('%s in %s:%s', $message, $file, $line),
+                        ['component' => 'StarmusSubmissionHandler', 'severity' => $severity]
+                    );
                     return false; // Continue normal error handling
                 }
             );
@@ -399,15 +402,15 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
                 $this->cleanup_chunks_dir($parent_dir);
             }
 
-            error_log('[STARMUS PHP] Creating attachment from: ' . $destination);
+            StarmusLogger::info('Creating attachment', ['component' => self::class, 'method' => __METHOD__, 'destination' => $destination]);
             $attachment_id = $this->dal->create_attachment_from_file($destination, $filename);
             if (is_wp_error($attachment_id)) {
-                error_log('[STARMUS PHP] Attachment creation failed: ' . $attachment_id->get_error_message());
+                StarmusLogger::warning('Attachment creation failed', ['component' => self::class, 'method' => __METHOD__, 'error' => $attachment_id->get_error_message()]);
                 unlink($destination);
                 return $attachment_id;
             }
 
-            error_log('[STARMUS PHP] Attachment created: ' . $attachment_id);
+            StarmusLogger::info('Attachment created', ['component' => self::class, 'method' => __METHOD__, 'attachment_id' => $attachment_id]);
 
             // Update vs Create Logic
             $existing_post_id = isset($form_data['post_id']) ? absint($form_data['post_id']) : (isset($form_data['recording_id']) ? absint($form_data['recording_id']) : 0);
@@ -421,7 +424,7 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
             } else {
                 $user_id = isset($form_data['user_id']) ? absint($form_data['user_id']) : get_current_user_id();
                 $mapped_data = StarmusSchemaMapper::map_form_data($form_data);
-                $title = $mapped_data['dc_creator'] ?? pathinfo($filename, PATHINFO_FILENAME);
+                $title = $mapped_data['sparx_sparxstar_legal_name'] ?? pathinfo($filename, PATHINFO_FILENAME);
                 $cpt_post_id = $this->dal->create_audio_post(
                     $title,
                     $this->get_cpt_slug(),
@@ -547,15 +550,15 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
                 return $validation;
             }
 
-            error_log('[STARMUS PHP] Processing fallback upload for key: ' . $file_key);
+            StarmusLogger::info('Processing fallback upload', ['component' => self::class, 'method' => __METHOD__, 'file_key' => $file_key]);
             $result = $this->process_fallback_upload($files_data, $form_data, $file_key);
 
             if (is_wp_error($result)) {
-                error_log('[STARMUS PHP] Fallback upload failed: ' . $result->get_error_message());
+                StarmusLogger::warning('Fallback upload failed', ['component' => self::class, 'method' => __METHOD__, 'error' => $result->get_error_message()]);
                 return $result;
             }
 
-            error_log('[STARMUS PHP] Fallback upload success');
+            StarmusLogger::info('Fallback upload success', ['component' => self::class, 'method' => __METHOD__]);
 
             return [
                 'success' => true,
@@ -635,7 +638,7 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
                 $cpt_post_id = $existing_id;
             } else {
                 $mapped_data = StarmusSchemaMapper::map_form_data($form_data);
-                $title = $mapped_data['dc_creator'] ?? pathinfo((string) $files_data[$file_key]['name'], PATHINFO_FILENAME);
+                $title = $mapped_data['sparx_sparxstar_legal_name'] ?? pathinfo((string) $files_data[$file_key]['name'], PATHINFO_FILENAME);
                 $cpt_post_id = $this->dal->create_audio_post($title, $this->get_cpt_slug(), get_current_user_id());
             }
 
@@ -728,7 +731,7 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
 
             // Map form data to new schema
             $mapped_data = StarmusSchemaMapper::map_form_data($form_data);
-            error_log('[STARMUS PHP] Mapped form data: ' . json_encode(array_keys($mapped_data)));
+            StarmusLogger::debug('Mapped form data keys', ['component' => self::class, 'method' => __METHOD__, 'keys' => array_keys($mapped_data)]);
 
             // SAVE MAPPED DATA FOR COMPARISON
             update_post_meta($audio_post_id, 'starmus_mapped_submission_data', json_encode($mapped_data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
@@ -759,18 +762,17 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
             // Handle waveform JSON from JavaScript
             if (! empty($form_data['waveform_json'])) {
                 $wf_value = \is_string($form_data['waveform_json']) ? $form_data['waveform_json'] : json_encode($form_data['waveform_json']);
-                error_log('[STARMUS PHP] Saving starmus_waveform_json. Size: ' . \strlen($wf_value));
+                StarmusLogger::debug('Saving waveform JSON', ['component' => self::class, 'method' => __METHOD__, 'size' => \strlen($wf_value)]);
                 $this->update_acf_field('starmus_waveform_json', $wf_value, $audio_post_id);
             } else {
-                error_log('[STARMUS PHP] waveform_json is empty in form_data.');
+                StarmusLogger::debug('waveform_json is empty in form_data', ['component' => self::class, 'method' => __METHOD__]);
             }
 
-            // Handle first-pass transcription from JavaScript
+            // Handle first-pass transcription from JavaScript.
+            // Stored to sparx_sparxstar_transcription_text ACF field; outside the mapper pipeline.
+            // See StarmusSchemaMapper::FIELD_MAP §3.7 for rationale.
             if (! empty($form_data['transcription'])) {
-                error_log('[STARMUS PHP] Saving starmus_transcription_text. Keys: ' . substr((string) $form_data['transcription'], 0, 50));
-                $this->update_acf_field('starmus_transcription_text', sanitize_textarea_field($form_data['transcription']), $audio_post_id);
-            } else {
-                error_log('[STARMUS PHP] transcription is empty in form_data.');
+                $this->update_acf_field('sparx_sparxstar_transcription_text', sanitize_textarea_field($form_data['transcription']), $audio_post_id);
             }
 
             if (! empty($form_data['transcription_json'])) {
@@ -802,57 +804,52 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
             // IP stored in starmus_contributor_ip, distinct field for redundancy if needed
             // $this->update_acf_field('starmus_agree_ip', $user_ip, $audio_post_id);
 
-            // Session metadata (Group B) - includes new fields
-            $session_fields = [
-                'starmus_project_collection_id',
-                'starmus_accession_number',
-                'starmus_session_location',
-                'starmus_session_date', // Fixed key
-                'starmus_session_start_time',
-                'starmus_session_gps',
-                'starmus_recording_equipment',
-                'starmus_audio_files_originals',
-                'starmus_media_condition',
-                'agreement_to_terms_toggle',
-                'related_consent_agreement',
-                'starmus_rights_use',
-                'starmus_access_level',
-                // 'first_pass_transcription', // REMOVED: Handled explicitly via starmus_transcription_text
-                'starmus_audio_quality_score',
-                'starmus_assigned_story_type',
+            // Persist all DVE canonical fields from mapper output.
+            // The mapper emits sparx_sparxstar_* / sparx_aiwa_* keys.  These are not yet registered
+            // as ACF fields (ACF still uses starmus_* names), so they must be persisted directly via
+            // update_post_meta() rather than through update_acf_field() / update_field() — calling
+            // update_field() on an unregistered key returns false even if update_post_meta() would
+            // succeed, causing both silent data loss and spurious log_write_failure() entries.
+            // Once ACF field definitions are updated to the canonical names, this loop can revert to
+            // update_acf_field().
+            $skip_keys = [
+                // Internal taxonomy routing keys — not ACF meta (set via wp_set_post_terms below).
+                'sparx_tax_language',
+                'sparx_tax_dialect',
+                // recording-type is also a taxonomy term ID, handled by wp_set_post_terms below.
+                'recording-type',
+                // transcriber is an internal calibration payload persisted separately as
+                // starmus_transcriber_metadata JSON above; do not write raw to post meta.
+                'transcriber',
+                // User IDs — already persisted via extract_user_ids() loop above.
+                // Keys match ACF registrations (starmus_copyright_licensor / starmus_authorized_signatory).
+                'starmus_copyright_licensor',
+                'starmus_authorized_signatory',
+                // Submission ID — persisted explicitly below.
+                'sparx_sparxstar_signatory_submission_id',
             ];
-            foreach ($session_fields as $field) {
-                if (isset($mapped_data[$field])) {
-                    // specific handling for array/json fields if needed, but currently mapped logic handles string conversions
-                    $this->update_acf_field($field, sanitize_text_field((string) $mapped_data[$field]), $audio_post_id);
-                }
-            }
-
-            // Processing fields (Group C) - JSON encoded
             foreach ($mapped_data as $field => $value) {
+                if (\in_array($field, $skip_keys, true)) {
+                    continue;
+                }
+                // sparx_sparxstar_* / sparx_aiwa_* canonical keys are not registered ACF fields yet.
+                // Persist directly as post meta to avoid false failures from update_field().
                 if (StarmusSchemaMapper::is_json_field($field)) {
-                    $this->update_acf_field($field, $value, $audio_post_id);
+                    update_post_meta($audio_post_id, $field, $value);
+                } else {
+                    update_post_meta($audio_post_id, $field, sanitize_text_field((string) $value));
                 }
             }
 
-            // Core archival fields (Group A)
-            if (isset($mapped_data['starmus_dc_creator'])) {
-                $this->update_acf_field('starmus_dc_creator', sanitize_text_field((string) $mapped_data['starmus_dc_creator']), $audio_post_id);
-            }
-
-            // File attachments (Group C)
+            // File attachments — override audio_files_originals with the WP attachment ID when present.
             if ($attachment_id !== 0) {
-                $this->update_acf_field('starmus_original_source', $attachment_id, $audio_post_id);
-                // Also update audio_files_originals for backward compatibility
-                $this->update_acf_field('starmus_audio_files_originals', [$attachment_id], $audio_post_id);
-            }
-
-            if (isset($mapped_data['starmus_mastered_mp3'])) {
-                $this->update_acf_field('starmus_mastered_mp3', $mapped_data['starmus_mastered_mp3'], $audio_post_id);
-            }
-
-            if (isset($mapped_data['starmus_archival_wav'])) {
-                $this->update_acf_field('starmus_archival_wav', $mapped_data['starmus_archival_wav'], $audio_post_id);
+                // sparx_sparxstar_* attachment keys are not yet registered in ACF (ACF still uses
+                // starmus_* names), so persist them directly via update_post_meta() to avoid the
+                // silent false return from update_field() on unregistered keys.  Once ACF field
+                // definitions are updated to the canonical names (DVE §3.5), this block can revert
+                // to update_acf_field() with the same keys.
+                update_post_meta($audio_post_id, 'sparx_sparxstar_original_source', (int) $attachment_id);
+                update_post_meta($audio_post_id, 'sparx_sparxstar_audio_files_originals', [(int) $attachment_id]);
             }
 
             // Additional Group D fields
@@ -860,13 +857,22 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
                 $this->update_acf_field('url', $form_data['url'], $audio_post_id);
             }
 
-            if (isset($mapped_data['starmus_submission_id'])) {
-                $this->update_acf_field('starmus_submission_id', sanitize_text_field($mapped_data['starmus_submission_id']), $audio_post_id);
+            if (isset($mapped_data['sparx_sparxstar_signatory_submission_id'])) {
+                update_post_meta(
+                    $audio_post_id,
+                    'sparx_sparxstar_signatory_submission_id',
+                    sanitize_text_field((string) $mapped_data['sparx_sparxstar_signatory_submission_id'])
+                );
             }
 
-            // Handle taxonomies through mapped data
-            if (! empty($mapped_data['starmus_tax_language'])) {
-                wp_set_post_terms($audio_post_id, [(int) $mapped_data['starmus_tax_language']], 'starmus_tax_language');
+            // Handle taxonomies through mapped data.
+            // Mapper outputs sparx_tax_* routing keys; WordPress taxonomy slugs remain starmus_tax_*.
+            if (! empty($mapped_data['sparx_tax_language'])) {
+                wp_set_post_terms($audio_post_id, [(int) $mapped_data['sparx_tax_language']], 'starmus_tax_language');
+            }
+
+            if (! empty($mapped_data['sparx_tax_dialect'])) {
+                wp_set_post_terms($audio_post_id, [(int) $mapped_data['sparx_tax_dialect']], 'starmus_tax_dialect');
             }
 
             if (! empty($mapped_data['recording-type'])) {
@@ -964,10 +970,10 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
     private function trigger_post_processing(int $post_id, int $attachment_id, array $params): void
     {
         try {
-            error_log('[STARMUS PHP] Triggering post processing for post: ' . $post_id . ', attachment: ' . $attachment_id);
+            StarmusLogger::info('Triggering post processing', ['component' => self::class, 'method' => __METHOD__, 'post_id' => $post_id, 'attachment_id' => $attachment_id]);
             $processor = new StarmusPostProcessingService();
             $result = $processor->process($post_id, $attachment_id, $params);
-            error_log('[STARMUS PHP] Post processing result: ' . ($result ? 'SUCCESS' : 'FAILED'));
+            StarmusLogger::info('Post processing result', ['component' => self::class, 'method' => __METHOD__, 'result' => $result ? 'SUCCESS' : 'FAILED']);
 
             if (! $result && ! wp_next_scheduled('starmus_cron_process_pending_audio', [$post_id, $attachment_id])) {
                 StarmusLogger::log(
@@ -981,7 +987,6 @@ final class StarmusSubmissionHandler implements IStarmusSubmissionHandler
                 wp_schedule_single_event(time() + 60, 'starmus_cron_process_pending_audio', [$post_id, $attachment_id]);
             }
         } catch (Throwable $throwable) {
-            error_log('[STARMUS PHP] Post processing trigger failed: ' . $throwable->getMessage());
             StarmusLogger::log(
                 $throwable,
                 [

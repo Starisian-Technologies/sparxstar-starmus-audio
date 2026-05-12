@@ -26,7 +26,7 @@
  * Plugin URI:        https://starisian.com
  * Description:       Mobile-friendly audio recorder optimized for emerging markets.
  * Version:           0.9.2
- * Requires at least: 6.8
+ * Requires at least: 6.9
  * Requires PHP:      8.2
  * Text Domain:       starmus-audio-recorder
  * Domain Path:       /languages

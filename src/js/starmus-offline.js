@@ -18,7 +18,7 @@
 
 import { debugLog } from "./starmus-hooks.js";
 import { uploadWithPriority } from "./starmus-tus.js";
-import sparxstarIntegration from "./starmus-sparxstar-integration.js"; 
+import sparxstarIntegration from "./starmus-sparxstar-integration.js";
 
 /**
  * Configuration object for offline queue behavior.
@@ -321,7 +321,7 @@ class OfflineQueue {
         if (this.isProcessing || !navigator.onLine) {
             return;
         }
-         // Defer uploads when battery is critically low (<20%, not charging).
+        // Defer uploads when battery is critically low (<20%, not charging).
         // isBatteryCritical() reads the live cache kept by _readBattery() in the
         // integration module, so this is a zero-cost synchronous check.
         if (sparxstarIntegration.isBatteryCritical?.()) {

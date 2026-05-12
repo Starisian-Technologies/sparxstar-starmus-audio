@@ -169,7 +169,7 @@ try {
 
     // Parse Transcript
     // OPTIMIZATION: get_post_meta for large text
-    $transcript_raw = get_post_meta($post_id, 'starmus_transcription_text', true);
+    $transcript_raw = get_post_meta($post_id, 'sparx_sparxstar_transcription_text', true);
     $transcript_text = '';
     if (! empty($transcript_raw)) {
         $decoded = is_string($transcript_raw) ? json_decode($transcript_raw, true) : $transcript_raw;

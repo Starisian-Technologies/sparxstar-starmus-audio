@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Starisian\Sparxstar\Starmus\services;
 
 use Starisian\Sparxstar\Starmus\helpers\StarmusLogger;
+use Starisian\Sparxstar\Starmus\services\interfaces\IStarmusStorageService;
 use Throwable;
 
 if ( ! \defined('ABSPATH')) {
@@ -22,14 +23,26 @@ final class StarmusAudioPipeline
 
     private ?StarmusFFmpegService $ffmpeg_service = null;
 
-    private ?StarmusR2DirectService $r2_service = null;
+    /**
+     * Storage service. Typed to IStarmusStorageService so callers can inject any
+     * S3-compatible provider (Cloudflare R2, AWS S3, test double, etc.).
+     * Defaults to StarmusR2DirectService when not explicitly provided.
+     * Ref: Tech Spec v1.0 F-02, CS §0.7.
+     */
+    private ?IStarmusStorageService $storage_service = null;
 
-    public function __construct()
+    /**
+     * @param IStarmusStorageService|null $storage_service Optional storage service.
+     *                                                     When null, a StarmusR2DirectService is constructed using the provider
+     *                                                     constants defined in wp-config.php. Pass an explicit implementation
+     *                                                     to override the provider (e.g. for testing or alternative S3 targets).
+     */
+    public function __construct(?IStarmusStorageService $storage_service = null)
     {
         try {
             $this->id3_service = new StarmusEnhancedId3Service();
             $this->ffmpeg_service = new StarmusFFmpegService($this->id3_service);
-            $this->r2_service = new StarmusR2DirectService($this->id3_service);
+            $this->storage_service = $storage_service ?? new StarmusR2DirectService($this->id3_service);
         } catch (Throwable $throwable) {
             StarmusLogger::log($throwable);
         }
@@ -49,6 +62,18 @@ final class StarmusAudioPipeline
         ];
 
         try {
+            if ($this->id3_service === null || $this->ffmpeg_service === null) {
+                StarmusLogger::error(
+                    'Pipeline not fully initialised — id3_service or ffmpeg_service is null. Processing aborted.',
+                    [
+                        'component' => self::class,
+                        'post_id' => $post_id,
+                        'file_path' => $file_path,
+                    ]
+                );
+                return $results;
+            }
+
             // 1. Analyze original file with getID3
             $analysis = $this->id3_service->analyzeFile($file_path);
             $results['original_analysis'] = $this->extractKeyMetadata($analysis);
@@ -61,53 +86,16 @@ final class StarmusAudioPipeline
             $starmus_tags = $this->generateStarmusTags($form_data, $post_id);
             $results['metadata_written'] = $this->id3_service->writeTags($file_path, $starmus_tags);
 
-            // 3. Generate web-optimized versions
-            $upload_dir = wp_upload_dir();
-            $output_dir = $upload_dir['path'] . '/starmus_processed';
-
-            if ( ! is_dir($output_dir)) {
-                wp_mkdir_p($output_dir);
-            }
-
-            $results['web_versions'] = $this->ffmpeg_service->optimizeForWeb($file_path, $output_dir);
-
-            // 3b. Offload Web Versions and Cleanup
-            $offloaded_versions = [];
-            foreach ($results['web_versions'] as $quality => $local_version) {
-                if (file_exists($local_version)) {
-                    $key = \sprintf('audio/%d/%s_%s.mp3', $post_id, basename($file_path, '.mp3'), $quality);
-                    // This method is made public via our previous "universal refactor" logic sharing
-                    // If accessible, we use it. If not, we rely on StarmusR2DirectService doing its job.
-                    // However, StarmusR2DirectService::processAfricaAudio does versions internally.
-                    // We need a direct upload method here.
-
-                    // We'll use the uploadToStorage refactor we made public earlier or check availability.
-                    // Note: In StarmusR2DirectService, uploadToStorage was private. We'll need to use reflection
-                    // or better, use the processAfricaAudio strategy if it fits, OR make uploadToStorage public.
-                    // Since I cannot change StarmusR2DirectService visibility in this same step, I will
-                    // adapt to use what is available or handle upload here if needed.
-
-                    // Actually, StarmusR2DirectService is designed for the "Africa" optimization path.
-                    // If "web_versions" here are duplicate effort, we should reconcile them.
-                    // Assuming this pipeline desires immediate offload:
+            // 3. Generate web-optimized versions via the storage service (authoritative path).
+            // processAfricaAudio() creates bandwidth-tiered versions (2G/3G/WiFi), uploads them
+            // to storage, and removes local temp files. The default StarmusR2DirectService
+            // implements Africa-optimised encoding. Alternative provider implementations that do
+            // not support this optimisation must return []. Ref: Tech Spec v1.0 F-05.
+            if ($this->storage_service !== null) {
+                $r2_results = $this->storage_service->processAfricaAudio($file_path, $post_id);
+                if ($r2_results !== [] && ! isset($r2_results['message'])) {
+                    $results['web_versions'] = $r2_results;
                 }
-            }
-
-            // REVISION: The user wants "momentarily" local.
-            // StarmusR2DirectService::processAfricaAudio takes a local path, makes versions, uploads them, deletes temps.
-            // This overlaps with Step 3 "Generate web-optimized versions" here.
-            // To respect the rule: We should likely replace manual FFmpeg calls here with R2 service calls
-            // IF the Goal is R2 residence.
-
-            // Replacing Step 3 entirely with R2 Service Integration
-            $r2_results = $this->r2_service->processAfricaAudio($file_path, $post_id);
-            if ($r2_results !== [] && ! isset($r2_results['message'])) {
-                $results['web_versions'] = $r2_results;
-            } else {
-                // Fallback or non-applicable file workflow (keep existing behavior but cleanup)
-                // If processAfricaAudio returns "No optimization needed", we might still want to
-                // offload strict web versions.
-                // For now, let's assume the R2 Service handles the "optimized" set.
             }
 
             // 4. Generate waveform for editor
@@ -163,7 +151,7 @@ final class StarmusAudioPipeline
     private function generateStarmusTags(array $form_data, int $post_id): array
     {
         $site_name = get_bloginfo('name');
-        $year = date('Y');
+        $year = gmdate('Y');
 
         return [
         'title' => [$form_data['title'] ?? 'Recording #' . $post_id],

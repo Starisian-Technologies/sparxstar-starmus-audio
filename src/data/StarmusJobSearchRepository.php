@@ -30,7 +30,7 @@ final readonly class StarmusJobSearchRepository
 
     public function find(string $job_id): ?StarmusJob
     {
-        $row = $this->db->get_row($this->db->prepare(\sprintf('SELECT * FROM %s WHERE job_id = %%s', $this->table_name), $job_id));
+        $row = $this->db->get_row($this->db->prepare(\sprintf('SELECT id, job_id, post_id, status, attempts, file_path, error_message, result, created_at, finished_at FROM %s WHERE job_id = %%s', $this->table_name), $job_id));
         if ( ! $row) {
             return null;
         }
@@ -77,7 +77,7 @@ final readonly class StarmusJobSearchRepository
         $offset = ($page - 1) * $per_page;
         $results = $this->db->get_results(
             $this->db->prepare(
-                'SELECT * FROM %s ORDER BY created_at DESC LIMIT %d OFFSET %d',
+                'SELECT id, job_id, post_id, status, attempts, file_path, error_message, result, created_at, finished_at FROM %s ORDER BY created_at DESC LIMIT %d OFFSET %d',
                 $this->table_name,
                 $per_page,
                 $offset
