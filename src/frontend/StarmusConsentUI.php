@@ -6,6 +6,7 @@ namespace Starisian\Sparxstar\Starmus\frontend;
 use RuntimeException;
 use Starisian\Sparxstar\Starmus\core\StarmusConsentHandler;
 use Starisian\Sparxstar\Starmus\core\StarmusSettings;
+use Starisian\Sparxstar\Starmus\core\StarmusUiPackageResolver;
 use Starisian\Sparxstar\Starmus\helpers\StarmusTemplateLoaderHelper;
 use Throwable;
 
@@ -32,10 +33,16 @@ class StarmusConsentUI
 
     private ?StarmusSettings $settings = null;
 
-    public function __construct(StarmusConsentHandler $handler, StarmusSettings $settings)
+    private readonly StarmusUiPackageResolver $package_resolver;
+
+    public function __construct(StarmusConsentHandler $handler, StarmusSettings $settings, ?StarmusUiPackageResolver $package_resolver = null)
     {
         $this->handler = $handler;
         $this->settings = $settings;
+        $this->package_resolver = $package_resolver ?? new StarmusUiPackageResolver(
+            \defined('STARMUS_URL') ? STARMUS_URL : '',
+            \defined('STARMUS_PATH') ? STARMUS_PATH : ''
+        );
     }
 
     public function register_hooks(): void
@@ -241,75 +248,27 @@ class StarmusConsentUI
 
     private function enqueue_assets(): void
     {
-        $url = \defined('STARMUS_URL') ? STARMUS_URL : '';
-
-        $path = \defined('STARMUS_PATH') ? STARMUS_PATH : '';
-
-        $css_asset = $this->resolve_asset(
-            $url,
-            $path,
-            'assets/css/starmus-consent.min.css',
-            'src/css/consent/starmus-consent.css'
-        );
+        $css_asset = $this->package_resolver->resolve_asset('consentStyle');
 
         if ($css_asset['url'] !== '') {
             wp_enqueue_style(
-                self::CONSENT_STYLE_HANDLE,
+                $css_asset['handle'],
                 $css_asset['url'],
                 [],
                 $css_asset['version']
             );
         }
 
-        $js_asset = $this->resolve_asset(
-            $url,
-            $path,
-            'assets/js/starmus-legal.min.js',
-            'src/js/consent/starmus-legal.js'
-        );
+        $js_asset = $this->package_resolver->resolve_asset('consentScript');
 
         if ($js_asset['url'] !== '') {
             wp_enqueue_script(
-                self::CONSENT_SCRIPT_HANDLE,
+                $js_asset['handle'],
                 $js_asset['url'],
                 [],
                 $js_asset['version'],
                 true
             );
         }
-    }
-
-    /**
-     * @return array{url: string, version: string}
-     */
-    private function resolve_asset(string $base_url, string $base_path, string $min_rel, string $src_rel): array
-    {
-        if ($base_path !== '' && file_exists($base_path . $min_rel)) {
-            return [
-                'url' => $base_url . $min_rel,
-                'version' => (string) filemtime($base_path . $min_rel),
-            ];
-        }
-
-        if ($base_path !== '' && file_exists($base_path . $src_rel)) {
-            return [
-                'url' => $base_url . $src_rel,
-                'version' => (string) filemtime($base_path . $src_rel),
-            ];
-        }
-
-        return [
-            'url' => '',
-            'version' => $this->resolve_version(),
-        ];
-    }
-
-    private function resolve_version(): string
-    {
-        if (\defined('STARMUS_VERSION')) {
-            return (string) STARMUS_VERSION;
-        }
-
-        return '1.0.0';
     }
 }

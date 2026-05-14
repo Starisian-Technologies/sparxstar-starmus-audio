@@ -25,7 +25,24 @@ $allowed_types_arr = array_values(array_filter(array_map(trim(...), explode(',',
 $is_admin = current_user_can('manage_options');
 $consent_message ??= __('By submitting this recording, you agree to our', 'starmus-audio-recorder');
 $data_policy_url ??= '';
+$bootstrap_page = [
+    'pageType' => 'rerecorder',
+    'mode' => 'update',
+    'postId' => (int) ($post_id ?? 0),
+    'canCommit' => current_user_can('publish_posts'),
+    'artifact' => [
+        'type' => 'OralRuntimeArtifact',
+        'id' => (string) ($post_id ?? 0),
+    ],
+    'hosts' => [
+        'formId' => $instance_id,
+        'formSelector' => 'form[data-starmus-instance="' . $instance_id . '"]',
+    ],
+];
 ?>
+<script>
+    window.STARMUS_BOOTSTRAP_PAGE = <?php echo wp_json_encode($bootstrap_page); ?>;
+</script>
 <div class="starmus-audio-re-recorder-wrapper" data-starmus="recorder" data-starmus-mode="update" data-starmus-instance="<?php echo esc_attr($instance_id); ?>">
     <div class="starmus-recorder-form sparxstar-glass-card">
         <form

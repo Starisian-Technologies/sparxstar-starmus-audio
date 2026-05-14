@@ -25,10 +25,24 @@ $editor_data = [
     'waveform_data' => isset($context['starmus_waveform_json']) ? json_decode($context['starmus_waveform_json'], true) : null,
     'canCommit' => current_user_can('edit_post', $current_post_id),
 ];
+$bootstrap_page = [
+    'pageType' => 'editor',
+    'mode' => 'editor',
+    'postId' => $current_post_id,
+    'canCommit' => current_user_can('edit_post', $current_post_id),
+    'artifact' => [
+        'type' => 'OralRuntimeArtifact',
+        'id' => (string) $current_post_id,
+    ],
+    'hosts' => [
+        'editorRootId' => 'starmus-editor-root',
+    ],
+];
 ?>
 
 <!-- JS Bootstrap Data -->
 <script>
+    window.STARMUS_BOOTSTRAP_PAGE = <?php echo wp_json_encode($bootstrap_page); ?>;
     window.STARMUS_EDITOR_DATA = <?php echo wp_json_encode($editor_data); ?>;
 </script>
 
@@ -52,7 +66,7 @@ $editor_data = [
                 } else {
                     esc_html_e('No Recording', 'starmus-audio-recorder');
                 }
-?>
+                ?>
             </span>
         </h2>
         <div class="starmus-editor__time">

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Starisian\Sparxstar\Starmus\frontend;
 
 use function class_exists;
@@ -6,6 +9,7 @@ use function ob_get_clean;
 use function ob_start;
 
 use Starisian\Sparxstar\Starmus\data\StarmusProsodyDAL;
+use Starisian\Sparxstar\Starmus\core\StarmusUiPackageResolver;
 use Starisian\Sparxstar\Starmus\helpers\StarmusLogger;
 use Throwable;
 
@@ -24,9 +28,15 @@ class StarmusProsodyPlayer
 {
     private ?StarmusProsodyDAL $dal = null;
 
-    public function __construct(?StarmusProsodyDAL $prosody_dal = null)
+    private readonly StarmusUiPackageResolver $package_resolver;
+
+    public function __construct(?StarmusProsodyDAL $prosody_dal = null, ?StarmusUiPackageResolver $package_resolver = null)
     {
         $this->dal = $prosody_dal ?: new StarmusProsodyDAL();
+        $this->package_resolver = $package_resolver ?? new StarmusUiPackageResolver(
+            \defined('STARMUS_URL') ? STARMUS_URL : '',
+            \defined('STARMUS_PATH') ? STARMUS_PATH : ''
+        );
         $this->register_hooks();
     }
 
@@ -78,22 +88,26 @@ class StarmusProsodyPlayer
      */
     public function register_assets(): void
     {
-        // Enqueue the CSS (assuming you saved the CSS from previous chat to a file)
-        wp_register_style(
-            'starmus-prosody-css',
-            STARMUS_URL . 'assets/css/starmus-prosody-engine.min.css',
-            [],
-            STARMUS_VERSION
-        );
+        $css_asset = $this->package_resolver->resolve_asset('prosodyStyle');
+        if ($css_asset['url'] !== '') {
+            wp_register_style(
+                $css_asset['handle'],
+                $css_asset['url'],
+                [],
+                $css_asset['version']
+            );
+        }
 
-        // Enqueue the JS (assuming you saved the JS Class to a file)
-        wp_register_script(
-            'starmus-prosody-js',
-            STARMUS_URL . 'assets/js/starmus-prosody-engine.min.js',
-            [],
-            STARMUS_VERSION,
-            true // Load in footer
-        );
+        $js_asset = $this->package_resolver->resolve_asset('prosodyScript');
+        if ($js_asset['url'] !== '') {
+            wp_register_script(
+                $js_asset['handle'],
+                $js_asset['url'],
+                [],
+                $js_asset['version'],
+                true
+            );
+        }
     }
 
     /**
