@@ -223,7 +223,7 @@ final class StarmusAssetLoader
             );
             wp_add_inline_script(
                 $script_asset['handle'],
-                'window.STARMUS_BOOTSTRAP = Object.assign({}, window.STARMUS_BOOTSTRAP_BASE || {}, window.STARMUS_BOOTSTRAP_PAGE || {});',
+                $this->build_bootstrap_merge_script(),
                 'before'
             );
 
@@ -330,7 +330,7 @@ final class StarmusAssetLoader
             StarmusLogger::log($throwable);
         }
 
-        $this->starmusEnqueueImageAssets();
+        $this->starmusEnqueueImageAssets($style_asset['handle']);
     }
 
     /**
@@ -402,12 +402,14 @@ final class StarmusAssetLoader
         }
     }
 
-    private function starmusEnqueueImageAssets(): void
+    private function starmusEnqueueImageAssets(string $style_handle): void
     {
+        if ($style_handle === '') {
+            return;
+        }
+
         // 2. Get the full URL to your image
         $bg_image_url = plugins_url('src/frontend/images/bo-play.png', __FILE__);
-        $style_asset = $this->package_resolver->resolve_asset('recorderStyle');
-        $style_handle = $style_asset['handle'] !== '' ? $style_asset['handle'] : self::STYLE_HANDLE;
 
         // 3. Create a CSS variable and attach it to your stylesheet
         $custom_css = "
@@ -416,6 +418,24 @@ final class StarmusAssetLoader
             }
         ";
         wp_add_inline_style($style_handle, $custom_css);
+    }
+
+    private function build_bootstrap_merge_script(): string
+    {
+        return <<<'JS'
+window.STARMUS_BOOTSTRAP = Object.assign(
+    {},
+    window.STARMUS_BOOTSTRAP_BASE || {},
+    ((page) => ({
+        pageType: page.pageType,
+        mode: page.mode,
+        postId: page.postId,
+        canCommit: page.canCommit,
+        artifact: page.artifact,
+        hosts: page.hosts,
+    }))(window.STARMUS_BOOTSTRAP_PAGE || {})
+);
+JS;
     }
 
     /**

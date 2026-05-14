@@ -298,9 +298,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (bootstrap.pageType === "recorder" || bootstrap.pageType === "rerecorder") {
-            const recorderForm = bootstrap.hosts.formSelector
-                ? document.querySelector(bootstrap.hosts.formSelector)
-                : document.getElementById(bootstrap.hosts.formId || "");
+            let recorderForm = null;
+            if (bootstrap.hosts.formSelector) {
+                recorderForm = document.querySelector(bootstrap.hosts.formSelector);
+            } else if (bootstrap.hosts.formId) {
+                recorderForm = document.querySelector(
+                    'form[data-starmus-instance="' + bootstrap.hosts.formId + '"]',
+                );
+            }
 
             if (!recorderForm) {
                 console.error("[StarmusMain] Recorder host not found for bootstrap.");

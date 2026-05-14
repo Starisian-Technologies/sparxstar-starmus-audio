@@ -108,7 +108,7 @@ final class StarmusUiPackageResolver
 
     private function resolve_version(): string
     {
-        return (\defined('STARMUS_VERSION') && STARMUS_VERSION) ? (string) STARMUS_VERSION : '1.0.0';
+        return \defined('STARMUS_VERSION') ? (string) STARMUS_VERSION : '1.0.0';
     }
 
     /**
