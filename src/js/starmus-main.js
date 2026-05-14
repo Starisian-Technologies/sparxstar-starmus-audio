@@ -137,12 +137,21 @@ function getRuntimeBootstrap() {
     // STARMUS_BOOTSTRAP is composed by PHP via wp_add_inline_script(..., 'before')
     // immediately before this bundle executes, so the merged object is the
     // authoritative runtime contract for initialization.
+    if (!window.STARMUS_BOOTSTRAP_PAGE || typeof window.STARMUS_BOOTSTRAP_PAGE !== "object") {
+        console.warn("[StarmusMain] Missing STARMUS_BOOTSTRAP_PAGE.");
+        return null;
+    }
+
     if (!window.STARMUS_BOOTSTRAP || typeof window.STARMUS_BOOTSTRAP !== "object") {
         console.warn("[StarmusMain] Missing STARMUS_BOOTSTRAP.");
         return null;
     }
 
-    if (!window.STARMUS_BOOTSTRAP.pageType || !window.STARMUS_BOOTSTRAP.hosts) {
+    if (
+        !window.STARMUS_BOOTSTRAP.pageType ||
+        window.STARMUS_BOOTSTRAP.pageType === "unknown" ||
+        !window.STARMUS_BOOTSTRAP.hosts
+    ) {
         console.warn("[StarmusMain] Incomplete STARMUS_BOOTSTRAP.");
         return null;
     }

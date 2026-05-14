@@ -425,18 +425,18 @@ final class StarmusAssetLoader
         return <<<'JS'
 // The asset loader composes the final runtime bootstrap immediately before this
 // bundle executes. Only page-surface fields may override the base bootstrap.
-window.STARMUS_BOOTSTRAP = Object.assign(
-    {},
-    window.STARMUS_BOOTSTRAP_BASE || {},
-    ((page) => ({
-        pageType: page.pageType,
-        mode: page.mode,
-        postId: page.postId,
-        canCommit: page.canCommit,
-        artifact: page.artifact,
-        hosts: page.hosts,
-    }))(window.STARMUS_BOOTSTRAP_PAGE || {})
-);
+window.STARMUS_BOOTSTRAP = Object.assign({}, window.STARMUS_BOOTSTRAP_BASE || {});
+
+if (window.STARMUS_BOOTSTRAP_PAGE && typeof window.STARMUS_BOOTSTRAP_PAGE === "object") {
+    window.STARMUS_BOOTSTRAP = Object.assign(window.STARMUS_BOOTSTRAP, {
+        pageType: window.STARMUS_BOOTSTRAP_PAGE.pageType || "unknown",
+        mode: window.STARMUS_BOOTSTRAP_PAGE.mode || "unknown",
+        postId: window.STARMUS_BOOTSTRAP_PAGE.postId || 0,
+        canCommit: Boolean(window.STARMUS_BOOTSTRAP_PAGE.canCommit),
+        artifact: window.STARMUS_BOOTSTRAP_PAGE.artifact || window.STARMUS_BOOTSTRAP.artifact,
+        hosts: window.STARMUS_BOOTSTRAP_PAGE.hosts || null,
+    });
+}
 JS;
     }
 

@@ -27,7 +27,7 @@ final class StarmusUiPackageResolver
         private readonly string $base_path = ''
     ) {
         if ($this->base_url === '' || $this->base_path === '') {
-            throw new InvalidArgumentException('StarmusUiPackageResolver requires non-empty base URL and base path.');
+            throw new InvalidArgumentException('StarmusUiPackageResolver requires both base_url and base_path to be non-empty strings.');
         }
     }
 

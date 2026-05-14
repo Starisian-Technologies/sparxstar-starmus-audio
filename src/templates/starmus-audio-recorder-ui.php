@@ -53,7 +53,7 @@ $bootstrap_page = [
 
 ?>
 <script>
-    window.STARMUS_BOOTSTRAP_PAGE = JSON.parse('<?php echo esc_js((string) wp_json_encode($bootstrap_page, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)); ?>');
+    window.STARMUS_BOOTSTRAP_PAGE = <?php echo wp_json_encode($bootstrap_page, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
 </script>
 <div class="starmus-audio-recorder-wrapper" data-starmus="recorder" data-starmus-mode="create" data-starmus-instance="<?php echo esc_attr($instance_id); ?>">
     <div id="starmus-app" class="starmus-recorder-form sparxstar-glass-card">
