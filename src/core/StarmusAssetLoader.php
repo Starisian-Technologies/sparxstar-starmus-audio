@@ -423,6 +423,8 @@ final class StarmusAssetLoader
     private function build_bootstrap_merge_script(): string
     {
         return <<<'JS'
+// The asset loader composes the final runtime bootstrap immediately before this
+// bundle executes. Only page-surface fields may override the base bootstrap.
 window.STARMUS_BOOTSTRAP = Object.assign(
     {},
     window.STARMUS_BOOTSTRAP_BASE || {},
@@ -451,7 +453,6 @@ JS;
             'version' => $this->resolve_version(),
             'config' => $config,
             'env' => wp_get_environment_type(),
-            'postId' => get_the_ID() ?: 0,
             'recordingId' => isset(self::$editor_data['post_id']) ? (int) self::$editor_data['post_id'] : 0,
             'restUrl' => esc_url_raw(rest_url()),
             'homeUrl' => esc_url_raw(home_url('/')),

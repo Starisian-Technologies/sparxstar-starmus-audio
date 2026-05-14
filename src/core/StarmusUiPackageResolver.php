@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Starisian\Sparxstar\Starmus\core;
 
+use InvalidArgumentException;
+
 use function file_exists;
 use function file_get_contents;
 use function filemtime;
@@ -24,6 +26,9 @@ final class StarmusUiPackageResolver
         private readonly string $base_url = '',
         private readonly string $base_path = ''
     ) {
+        if ($this->base_url === '' || $this->base_path === '') {
+            throw new InvalidArgumentException('StarmusUiPackageResolver requires non-empty base URL and base path.');
+        }
     }
 
     /**
