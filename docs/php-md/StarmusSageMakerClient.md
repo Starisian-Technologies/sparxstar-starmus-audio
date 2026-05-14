@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\integrations`
 
-**File:** `/workspaces/starmus-audio-recorder/src/integrations/StarmusSageMakerClient.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/integrations/StarmusSageMakerClient.php`
 
 ## Description
 

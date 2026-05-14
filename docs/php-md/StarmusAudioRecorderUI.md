@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\frontend`
 
-**File:** `/workspaces/starmus-audio-recorder/src/frontend/StarmusAudioRecorderUI.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/frontend/StarmusAudioRecorderUI.php`
 
 ## Description
 
@@ -20,16 +20,19 @@ Front-end presentation layer for the Starmus recorder experience.
 /
 namespace Starisian\Sparxstar\Starmus\frontend;
 
+use function absint;
+
 use Exception;
 use Starisian\Sparxstar\Starmus\core\StarmusSettings;
 use Starisian\Sparxstar\Starmus\helpers\StarmusLogger;
 use Starisian\Sparxstar\Starmus\helpers\StarmusTemplateLoaderHelper;
 use Throwable;
-use WP_Query;
-use function wp_get_object_terms;
-use function absint;
 
-if (! \defined('ABSPATH')) {
+use function wp_get_object_terms;
+
+use WP_Query;
+
+if ( ! \defined('ABSPATH')) {
     exit;
 }
 

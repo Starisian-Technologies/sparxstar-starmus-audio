@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\admin\widgets`
 
-**File:** `/workspaces/starmus-audio-recorder/src/admin/widgets/StarmusAdminWidgets.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/admin/widgets/StarmusAdminWidgets.php`
 
 ## Description
 
@@ -22,7 +22,7 @@ namespace Starisian\Sparxstar\Starmus\admin\widgets;
 
 use Throwable;
 
-if (! \defined('ABSPATH')) {
+if ( ! \defined('ABSPATH')) {
     exit;
 }
 

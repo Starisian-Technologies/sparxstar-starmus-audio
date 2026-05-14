@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\services`
 
-**File:** `/workspaces/starmus-audio-recorder/src/services/StarmusWaveformService.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/services/StarmusWaveformService.php`
 
 ## Description
 
@@ -88,7 +88,7 @@ use function trim;
 use function uniqid;
 use function wp_json_encode;
 
-if (! \defined('ABSPATH')) {
+if ( ! \defined('ABSPATH')) {
     exit;
 }
 

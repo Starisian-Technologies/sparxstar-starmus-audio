@@ -42,10 +42,11 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
  * Runs silently on cloned stream without affecting audio recording.
  */
 class LanguageSignalAnalyzer {
-    constructor({ tier, country, maxDuration = 20000 }) {
+    constructor({ tier, country, maxDuration = 5000 }) {
         this.tier = tier;
         this.country = country;
-        this.maxDuration = maxDuration;
+        // Sensor active window capped at 5000ms per CS §3.1. Ref: Tech Spec v1.0 F-14.
+        this.maxDuration = Math.min(maxDuration, 5000);
 
         this.probeLanguages = this.getProbeLanguages();
 
@@ -69,14 +70,14 @@ class LanguageSignalAnalyzer {
         }
 
         switch (this.country) {
-        case "GM":
-            return ["en-US"]; // Gambia - English probe only
-        case "SN":
-        case "GN":
-        case "ML":
-            return ["fr-FR"]; // Francophone - French probe only
-        default:
-            return ["en-US"]; // Unknown - English fallback
+            case "GM":
+                return ["en-US"]; // Gambia - English probe only
+            case "SN":
+            case "GN":
+            case "ML":
+                return ["fr-FR"]; // Francophone - French probe only
+            default:
+                return ["en-US"]; // Unknown - English fallback
         }
     }
 
@@ -497,6 +498,27 @@ function initRecorder(store, instanceId) {
             return;
         }
         try {
+            // Validate bootstrap mode BEFORE requesting microphone access.
+            // Per the bootstrap contract, missing or invalid mode is a hard error — not a silent
+            // fallback. Validating here ensures the start-recording path does not trigger a mic
+            // prompt when STARMUS_BOOTSTRAP.mode is absent or invalid.
+            // Ref: Tech Spec v1.0 F-04, STARMUS_BOOTSTRAP invariant.
+            const VALID_MODES = { production: 120000, development: 180000, draft: 300000 };
+            const bootstrapMode = window.STARMUS_BOOTSTRAP ? window.STARMUS_BOOTSTRAP.mode : null;
+            if (
+                !bootstrapMode ||
+                !Object.prototype.hasOwnProperty.call(VALID_MODES, bootstrapMode)
+            ) {
+                store.dispatch({
+                    type: "starmus/error",
+                    payload: {
+                        message: "Recording aborted: STARMUS_BOOTSTRAP.mode is missing or invalid.",
+                    },
+                });
+                return;
+            }
+            const maxRecordingMs = VALID_MODES[bootstrapMode];
+
             // Get optimized settings from SPARXSTAR
             const envData = sparxstarIntegration.getEnvironmentData();
             const settings =
@@ -560,7 +582,7 @@ function initRecorder(store, instanceId) {
                 signalAnalyzer = new LanguageSignalAnalyzer({
                     tier: deviceTier,
                     country: userCountry,
-                    maxDuration: 20000,
+                    maxDuration: 5000,
                 });
 
                 // Silent observer - never blocks recording
@@ -623,10 +645,36 @@ function initRecorder(store, instanceId) {
             };
 
             recorderRegistry.set(instanceId, { mediaRecorder, rafId: null, signalAnalyzer });
+
             const startTime = Date.now();
             mediaRecorder.start(chunkInterval);
             console.debug("[RECORDER]", mediaRecorder.state);
             store.dispatch({ type: "starmus/mic-start" });
+
+            // Max-duration hard stop. Limits by bootstrap mode per CS §4.1. Ref: Tech Spec v1.0 F-04.
+            // production: 120 s | development: 180 s | draft: 300 s
+            const durationTimer = setTimeout(() => {
+                const rec = recorderRegistry.get(instanceId);
+                if (rec && rec.mediaRecorder && rec.mediaRecorder.state === "recording") {
+                    console.warn(
+                        "[Recorder] Max duration reached (" +
+                            maxRecordingMs / 1000 +
+                            "s). Stopping.",
+                    );
+                    rec.mediaRecorder.stop();
+                    store.dispatch({
+                        type: "starmus/max-duration-reached",
+                        payload: { maxSeconds: maxRecordingMs / 1000, mode: bootstrapMode },
+                    });
+                }
+            }, maxRecordingMs);
+            // Store timer reference so stop-mic can clear it
+            recorderRegistry.set(instanceId, {
+                mediaRecorder,
+                rafId: null,
+                signalAnalyzer,
+                durationTimer,
+            });
 
             // Amplitude visualization setup
             const analyser = ctx.createAnalyser();
@@ -688,6 +736,9 @@ function initRecorder(store, instanceId) {
             return;
         }
         const rec = recorderRegistry.get(instanceId);
+        if (rec?.durationTimer) {
+            clearTimeout(rec.durationTimer);
+        }
         if (rec?.mediaRecorder?.state === "recording" || rec?.mediaRecorder?.state === "paused") {
             rec.mediaRecorder.stop();
             if (rec.signalAnalyzer) {

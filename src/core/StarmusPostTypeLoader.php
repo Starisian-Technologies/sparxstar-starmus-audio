@@ -3745,9 +3745,9 @@ final class StarmusPostTypeLoader implements IContentBundle
                         'selected' => 0,
                     ],
                     [
-                        'key' => 'starmus_transcription_text',
+                        'key' => 'sparx_sparxstar_transcription_text',
                         'label' => 'Transcription Text',
-                        'name' => 'starmus_transcription_text',
+                        'name' => 'sparx_sparxstar_transcription_text',
                         'aria-label' => '',
                         'type' => 'wysiwyg',
                         'instructions' => 'Type or paste the written text of everything said in the audio recording. Include all words spoken.',

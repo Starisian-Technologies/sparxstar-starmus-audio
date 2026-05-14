@@ -88,12 +88,15 @@ const uploadCircuitBreaker = new UploadCircuitBreaker();
  */
 // 1. Config
 function getDefaultConfig() {
-    // Get optimized settings from SPARXSTAR if available
+    // Get optimized settings from SPARXSTAR — uploadChunkSize is already
+    // resolved by _resolveChunkSize() in the integration module based on the
+    // live effectiveType, so there is no need to re-implement the vendor-prefix
+    // lookup or the effectiveType → size map here.
     const envData = sparxstarIntegration.getEnvironmentData();
     const settings = envData?.recordingSettings || {};
 
     return {
-        chunkSize: settings.uploadChunkSize || 512 * 1024, // Tier-optimized chunk size
+        chunkSize: settings.uploadChunkSize || 512 * 1024,
         retryDelays: [0, 5000, 10000, 30000, 60000, 120000, 300000],
         removeFingerprintOnSuccess: true,
         maxChunkRetries: 10,

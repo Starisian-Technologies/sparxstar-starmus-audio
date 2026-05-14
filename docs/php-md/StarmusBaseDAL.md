@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\data`
 
-**File:** `/workspaces/starmus-audio-recorder/src/data/StarmusBaseDAL.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/data/StarmusBaseDAL.php`
 
 ## Description
 
@@ -44,7 +44,7 @@ use function update_post_meta;
 
 use WP_Query;
 
-if (! \defined('ABSPATH')) {
+if ( ! \defined('ABSPATH')) {
     exit;
 }
 

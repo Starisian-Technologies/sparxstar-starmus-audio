@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\core`
 
-**File:** `/workspaces/starmus-audio-recorder/src/core/StarmusSubmissionHandler.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/core/StarmusSubmissionHandler.php`
 
 ## Description
 

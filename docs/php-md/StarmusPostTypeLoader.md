@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\core`
 
-**File:** `/workspaces/starmus-audio-recorder/src/core/StarmusPostTypeLoader.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/core/StarmusPostTypeLoader.php`
 
 ## Description
 
@@ -14,13 +14,13 @@
 
 ## Methods
 
-### `sparxStarmusGetInstance()`
+### `starmusGetInstance()`
 
 **Visibility:** `public`
 
 Gets the singleton instance of StarmusPostTypeLoader.
 
-### `sparxStarmusRegister()`
+### `starmusRegister()`
 
 **Visibility:** `public`
 

@@ -100,7 +100,7 @@ try {
 
     // --- 2. Additional Metadata (Using Admin Logic for Robustness) ---
     // OPTIMIZATION: Use get_post_meta to avoid ACF processing on potentially large fields
-    $transcript_raw = get_post_meta($post_id, 'starmus_transcription_text', true);
+    $transcript_raw = get_post_meta($post_id, 'sparx_sparxstar_transcription_text', true);
     $transcript_text = '';
     if ( ! empty($transcript_raw)) {
         $decoded = is_string($transcript_raw) ? json_decode($transcript_raw, true) : $transcript_raw;

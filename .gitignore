@@ -67,6 +67,11 @@ Thumbs.db
 auth.json
 private/
 secrets/
+# Key / credential file types — any of these in the repo root is a security incident
+*.asc
+*.pem
+*.key
+*private*
 
 # ---------------------------------------------------------------------
 # WordPress core (keep plugin clean in any WP install)

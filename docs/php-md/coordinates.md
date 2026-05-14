@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus`
 
-**File:** `/workspaces/starmus-audio-recorder/src/StarmusAudioRecorder.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/StarmusAudioRecorder.php`
 
 ## Description
 
@@ -19,7 +19,7 @@ Main bootstrapper for the Starmus Audio Recorder plugin lifecycle.
 
 ## Methods
 
-### `starmus_get_instance()`
+### `starmusGetInstance()`
 
 **Visibility:** `public`
 
@@ -30,7 +30,7 @@ This is the primary way to access the plugin instance throughout the codebase.
 @since  0.1.0
 @return StarmusAudioRecorder The singleton instance.
 
-### `starmus_run()`
+### `starmusRun()`
 
 **Visibility:** `public`
 
@@ -41,7 +41,7 @@ to ensure SCF/ACF (priority 5) is already loaded.
 This is the main entry point for the entire plugin and should only be called once.
 @since 0.1.0
 
-### `check_field_plugin_dependency()`
+### `checkFieldPluginDependency()`
 
 **Visibility:** `public`
 
@@ -54,7 +54,7 @@ if the required dependency is not available.
 @since  0.1.0
 @return bool True when a supported field framework is available, false otherwise.
 
-### `get_DAL()`
+### `getDAL()`
 
 **Visibility:** `public`
 
@@ -64,7 +64,7 @@ access while preserving the singleton DAL contract.
 @since 0.1.0
 @return IStarmusAudioDAL|null Active DAL instance or null when unavailable.
 
-### `get_ProsodyDAL()`
+### `getProsodyDAL()`
 
 **Visibility:** `public`
 
@@ -86,6 +86,9 @@ Shows non-fatal errors that occurred during plugin execution as dismissible
 admin notices. Only visible to users with 'manage_options' capability.
 Errors are deduplicated before display to prevent notice spam.
 Called via 'admin_notices' action hook in admin context only.
+NOTE: The current_user_can('manage_options') check below is a UI display gate only —
+it controls whether error notices are rendered in the admin. It is not a governed action
+and does not require Sirus delegation. Ref: Tech Spec v1.0 F-13.
 @since 0.1.0
 
 ### `__clone()`
@@ -97,7 +100,6 @@ Ensures singleton pattern integrity by preventing object cloning,
 which would create multiple instances and violate the singleton contract.
 @since  0.1.0
 @throws LogicException Always - cloning is not allowed.
-@return void
 
 ### `__wakeup()`
 

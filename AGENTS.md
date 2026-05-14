@@ -12,6 +12,7 @@ If it cannot fail a build, it is not a standard. It is a suggestion.
 Version Policy
 --------------
 
+- **WordPress**: 6.9 or higher
 | Component | Version | Policy |
 | --- | --- | --- |
 | PHP | 8.2 minimum, 8.3 target | CI tests both. Code must pass on both. |

@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\i18n`
 
-**File:** `/workspaces/starmus-audio-recorder/src/i18n/Starmusi18NLanguage.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/i18n/Starmusi18NLanguage.php`
 
 ## Description
 
@@ -39,7 +39,7 @@ use function esc_html;
 use function load_plugin_textdomain;
 use function plugin_basename;
 
-if (! \defined('ABSPATH')) {
+if ( ! \defined('ABSPATH')) {
     exit;
 }
 

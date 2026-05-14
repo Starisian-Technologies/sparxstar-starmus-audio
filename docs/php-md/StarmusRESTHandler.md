@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\api`
 
-**File:** `/workspaces/starmus-audio-recorder/src/api/StarmusRESTHandler.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/api/StarmusRESTHandler.php`
 
 ## Description
 
@@ -132,7 +132,7 @@ namespace Starisian\Sparxstar\Starmus\api;
 
 use Throwable;
 
-if (! \defined('ABSPATH')) {
+if ( ! \defined('ABSPATH')) {
     exit;
 }
 

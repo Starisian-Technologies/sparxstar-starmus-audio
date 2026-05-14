@@ -2,7 +2,7 @@
 
 **Namespace:** `Starisian\Sparxstar\Starmus\services`
 
-**File:** `/workspaces/starmus-audio-recorder/src/services/StarmusAudioFormatService.php`
+**File:** `/workspaces/sparxstar-starmus-audio/src/services/StarmusAudioFormatService.php`
 
 ## Description
 
