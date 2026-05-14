@@ -49,9 +49,9 @@ Canonical Runtime Schemas
 
 The constitutional substrate for runtime continuity now lives in:
 
-* `/home/runner/work/sparxstar-starmus-audio/sparxstar-starmus-audio/engines/oral-runtime-event.schema.json`
+* `engines/oral-runtime-event.schema.json`
 
-* `/home/runner/work/sparxstar-starmus-audio/sparxstar-starmus-audio/engines/runtime-capability-projection.schema.json`
+* `engines/runtime-capability-projection.schema.json`
 
 These define the versioned event envelope and capability projection that package-driven runtime surfaces must honor.
 

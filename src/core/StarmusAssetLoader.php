@@ -406,6 +406,8 @@ final class StarmusAssetLoader
     {
         // 2. Get the full URL to your image
         $bg_image_url = plugins_url('src/frontend/images/bo-play.png', __FILE__);
+        $style_asset = $this->package_resolver->resolve_asset('recorderStyle');
+        $style_handle = $style_asset['handle'] !== '' ? $style_asset['handle'] : self::STYLE_HANDLE;
 
         // 3. Create a CSS variable and attach it to your stylesheet
         $custom_css = "
@@ -413,7 +415,7 @@ final class StarmusAssetLoader
                 --sparxstar-starmus-bg-url: url('{$bg_image_url}');
             }
         ";
-        wp_add_inline_style(self::STYLE_HANDLE, $custom_css);
+        wp_add_inline_style($style_handle, $custom_css);
     }
 
     /**
