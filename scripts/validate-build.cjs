@@ -4,7 +4,7 @@ const fs = require('fs');
 console.log("🔍 Validating build configuration...\n");
 
 const requiredFiles = [
-  'src/css/starmus-audio-recorder-style.css',
+  'src/css/starmus-audio-recorder.css',
   'src/js/starmus-audio-editor.js',
   'src/js/starmus-core.js',
   'src/js/starmus-hooks.js',

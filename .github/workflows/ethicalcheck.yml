@@ -28,42 +28,46 @@
 
 name: EthicalCheck-Workflow
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
-  # Customize trigger events based on your DevSecOps processes.
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
   schedule:
     - cron: '37 9 * * 2'
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  Trigger_EthicalCheck:
-    permissions:
-      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
-      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+  trigger_ethicalcheck:
     runs-on: ubuntu-latest
+    env:
+      APISEC_BASE_URL: ${{ vars.APISEC_BASE_URL }}
+      APISEC_SPECIFICATION_PATH: ${{ vars.APISEC_SPECIFICATION_PATH }}
+      APISECU_TOKEN: ${{ secrets.APISECU_TOKEN }}
 
     steps:
-       - name: EthicalCheck  Free & Automated API Security Testing Service
-         uses: apisec-inc/ethicalcheck-action@005fac321dd843682b1af6b72f30caaf9952c641
-         with:
-          # The OpenAPI Specification URL or Swagger Path or Public Postman collection URL.
-          oas-url: "http://netbanking.apisec.ai:8080/v2/api-docs"
-          # The email address to which the penetration test report will be sent.
-          email: "xxx@apisec.ai"
-          sarif-result-file: "ethicalcheck-results.sarif"
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-       - name: Upload sarif file to repository
-         uses: github/codeql-action/upload-sarif@v3
-         with:
-          sarif_file: ./ethicalcheck-results.sarif
+      - name: Validate EthicalCheck configuration
+        id: config
+        run: |
+          if [ -z "${APISEC_BASE_URL}" ] || [ -z "${APISEC_SPECIFICATION_PATH}" ] || [ -z "${APISECU_TOKEN}" ]; then
+            echo "configured=false" >> "${GITHUB_OUTPUT}"
+            echo "ℹ️ EthicalCheck is not configured. Set APISEC_BASE_URL, APISEC_SPECIFICATION_PATH, and APISECU_TOKEN to enable scans."
+            exit 0
+          fi
 
+          if [ ! -f "${APISEC_SPECIFICATION_PATH}" ]; then
+            echo "Configured OpenAPI specification file not found: ${APISEC_SPECIFICATION_PATH}"
+            exit 1
+          fi
+
+          echo "configured=true" >> "${GITHUB_OUTPUT}"
+
+      - name: Run APIsec scan
+        if: steps.config.outputs.configured == 'true'
+        uses: apisec-university/free-API-security-test-action@beta
+        with:
+          base_url: ${{ env.APISEC_BASE_URL }}
+          specification_path: ${{ env.APISEC_SPECIFICATION_PATH }}
+          apisecu_token: ${{ env.APISECU_TOKEN }}
