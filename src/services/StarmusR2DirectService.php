@@ -305,7 +305,7 @@ final class StarmusR2DirectService implements IStarmusStorageService
             throw new RuntimeException(\sprintf('%s is not defined or is empty.', $constant_name));
         }
 
-        $resolved_value = trim((string) $constant_value);
+        $resolved_value = (string) $constant_value;
 
         if ($resolved_value === '') {
             throw new RuntimeException(\sprintf('%s is not defined or is empty.', $constant_name));
