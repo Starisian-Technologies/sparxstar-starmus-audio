@@ -216,14 +216,9 @@ final class StarmusAssetLoader
 
             // Localize Scripts
             wp_localize_script($script_asset['handle'], 'starmusConfig', $config);
-            wp_localize_script(
-                $script_asset['handle'],
-                'STARMUS_BOOTSTRAP_BASE',
-                $this->build_runtime_bootstrap_base($config)
-            );
             wp_add_inline_script(
                 $script_asset['handle'],
-                $this->build_bootstrap_merge_script(),
+                $this->build_bootstrap_inline_script($config),
                 'before'
             );
 
@@ -420,24 +415,42 @@ final class StarmusAssetLoader
         wp_add_inline_style($style_handle, $custom_css);
     }
 
-    private function build_bootstrap_merge_script(): string
+    private function build_bootstrap_inline_script(array $config): string
     {
-        return <<<'JS'
-// The asset loader composes the final runtime bootstrap immediately before this
-// bundle executes. Only page-surface fields may override the base bootstrap.
-window.STARMUS_BOOTSTRAP = Object.assign({}, window.STARMUS_BOOTSTRAP_BASE || {});
+        $base = $this->build_runtime_bootstrap_base($config);
+        $base_json = (string) wp_json_encode($base, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 
-if (window.STARMUS_BOOTSTRAP_PAGE && typeof window.STARMUS_BOOTSTRAP_PAGE === "object") {
-    window.STARMUS_BOOTSTRAP = Object.assign(window.STARMUS_BOOTSTRAP, {
-        pageType: window.STARMUS_BOOTSTRAP_PAGE.pageType || "unknown",
-        mode: window.STARMUS_BOOTSTRAP_PAGE.mode || "unknown",
-        postId: window.STARMUS_BOOTSTRAP_PAGE.postId || 0,
-        canCommit: Boolean(window.STARMUS_BOOTSTRAP_PAGE.canCommit),
-        artifact: window.STARMUS_BOOTSTRAP_PAGE.artifact || window.STARMUS_BOOTSTRAP.artifact,
-        hosts: window.STARMUS_BOOTSTRAP_PAGE.hosts || null,
-    });
-}
+        return <<<JS
+// The asset loader emits the authoritative runtime bootstrap immediately before this
+// bundle executes. Page-surface fields written to window.STARMUS_BOOTSTRAP earlier
+// in the document are preserved; base fields fill any unset slots.
+(function () {
+    var base = {$base_json};
+    var page = window.STARMUS_BOOTSTRAP || {};
+    base.pageType = page.pageType || base.pageType;
+    base.mode = page.mode || base.mode;
+    base.postId = page.postId !== undefined ? page.postId : base.postId;
+    base.canCommit = page.canCommit !== undefined ? page.canCommit : base.canCommit;
+    base.artifact = page.artifact || base.artifact;
+    base.hosts = page.hosts !== undefined ? page.hosts : base.hosts;
+    window.STARMUS_BOOTSTRAP = base;
+}());
 JS;
+    }
+
+    private function resolve_bootstrap_mode(): string
+    {
+        $env = wp_get_environment_type();
+
+        if ($env === 'production') {
+            return 'production';
+        }
+
+        if ($env === 'staging') {
+            return 'draft';
+        }
+
+        return 'development';
     }
 
     /**
@@ -457,7 +470,7 @@ JS;
             'restUrl' => esc_url_raw(rest_url()),
             'homeUrl' => esc_url_raw(home_url('/')),
             'pageType' => 'unknown',
-            'mode' => 'unknown',
+            'mode' => $this->resolve_bootstrap_mode(),
             'artifact' => [
                 'type' => $runtime_projection['artifactType'] ?? 'OralRuntimeArtifact',
                 'id' => isset(self::$editor_data['post_id']) ? (string) self::$editor_data['post_id'] : '',

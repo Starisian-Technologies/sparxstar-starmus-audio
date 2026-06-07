@@ -27,7 +27,6 @@ $editor_data = [
 ];
 $bootstrap_page = [
     'pageType' => 'editor',
-    'mode' => 'editor',
     'postId' => $current_post_id,
     'canCommit' => current_user_can('edit_post', $current_post_id),
     'artifact' => [
@@ -42,8 +41,16 @@ $bootstrap_page = [
 
 <!-- JS Bootstrap Data -->
 <script>
-    window.STARMUS_BOOTSTRAP_PAGE = <?php echo wp_json_encode($bootstrap_page, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
-    window.STARMUS_EDITOR_DATA = <?php echo wp_json_encode($editor_data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+(function () {
+    window.STARMUS_BOOTSTRAP = window.STARMUS_BOOTSTRAP || {};
+    var page = <?php echo wp_json_encode($bootstrap_page, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+    window.STARMUS_BOOTSTRAP.pageType = page.pageType;
+    window.STARMUS_BOOTSTRAP.postId = page.postId;
+    window.STARMUS_BOOTSTRAP.canCommit = page.canCommit;
+    window.STARMUS_BOOTSTRAP.artifact = page.artifact;
+    window.STARMUS_BOOTSTRAP.hosts = page.hosts;
+}());
+window.STARMUS_EDITOR_DATA = <?php echo wp_json_encode($editor_data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
 </script>
 
 

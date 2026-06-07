@@ -41,8 +41,7 @@
       "package": "@sparxstar/starmus-runtime",
       "surface": "runtime",
       "type": "module",
-      "min": "assets/js/starmus-audio-recorder-script.bundle.min.js",
-      "src": "src/js/starmus-main.js"
+      "min": "assets/js/starmus-audio-recorder-script.bundle.min.js"
     },
     "recorderStyle": {
       "handle": "starmus-audio-recorder-styles",

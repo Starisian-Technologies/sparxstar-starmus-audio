@@ -38,7 +38,6 @@ $consent_message ??= __('By submitting this recording, you agree to our', 'starm
 $data_policy_url ??= '';
 $bootstrap_page = [
     'pageType' => 'recorder',
-    'mode' => 'create',
     'postId' => get_the_ID() ?: 0,
     'canCommit' => current_user_can('publish_posts'),
     'artifact' => [
@@ -53,7 +52,15 @@ $bootstrap_page = [
 
 ?>
 <script>
-    window.STARMUS_BOOTSTRAP_PAGE = <?php echo wp_json_encode($bootstrap_page, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+(function () {
+    window.STARMUS_BOOTSTRAP = window.STARMUS_BOOTSTRAP || {};
+    var page = <?php echo wp_json_encode($bootstrap_page, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+    window.STARMUS_BOOTSTRAP.pageType = page.pageType;
+    window.STARMUS_BOOTSTRAP.postId = page.postId;
+    window.STARMUS_BOOTSTRAP.canCommit = page.canCommit;
+    window.STARMUS_BOOTSTRAP.artifact = page.artifact;
+    window.STARMUS_BOOTSTRAP.hosts = page.hosts;
+}());
 </script>
 <div class="starmus-audio-recorder-wrapper" data-starmus="recorder" data-starmus-mode="create" data-starmus-instance="<?php echo esc_attr($instance_id); ?>">
     <div id="starmus-app" class="starmus-recorder-form sparxstar-glass-card">

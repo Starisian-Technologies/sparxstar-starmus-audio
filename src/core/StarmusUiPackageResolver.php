@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Starisian\Sparxstar\Starmus\core;
 
 use InvalidArgumentException;
+use Starisian\Sparxstar\Starmus\helpers\StarmusLogger;
 
 use function file_exists;
 use function file_get_contents;
@@ -22,13 +23,19 @@ final class StarmusUiPackageResolver
      */
     private ?array $manifest = null;
 
+    private readonly string $base_url;
+    private readonly string $base_path;
+
     public function __construct(
-        private readonly string $base_url = '',
-        private readonly string $base_path = ''
+        string $base_url = '',
+        string $base_path = ''
     ) {
-        if ($this->base_url === '' || $this->base_path === '') {
+        if ($base_url === '' || $base_path === '') {
             throw new InvalidArgumentException('StarmusUiPackageResolver requires both base_url and base_path to be non-empty strings.');
         }
+
+        $this->base_url = rtrim($base_url, '/') . '/';
+        $this->base_path = rtrim($base_path, '/') . '/';
     }
 
     /**
@@ -138,7 +145,16 @@ final class StarmusUiPackageResolver
         }
 
         $decoded = json_decode($manifest_json, true);
-        $this->manifest = is_array($decoded) ? $decoded : [];
+        if ( ! is_array($decoded)) {
+            StarmusLogger::error(
+                '[StarmusUiPackageResolver] Failed to parse manifest: ' . $manifest_path,
+                ['json_error' => json_last_error_msg()]
+            );
+            $this->manifest = [];
+            return $this->manifest;
+        }
+
+        $this->manifest = $decoded;
 
         return $this->manifest;
     }
