@@ -132,8 +132,15 @@ final class StarmusUiPackageResolver
             return $this->manifest;
         }
 
-        $manifest_path = $this->base_path . self::MANIFEST_FILE;
-        if ($this->base_path === '' || ! file_exists($manifest_path)) {
+        if ($this->base_path === '') {
+            $this->manifest = [];
+            return $this->manifest;
+        }
+
+        $normalized_base_path = \rtrim($this->base_path, '/\\');
+        $manifest_path        = $normalized_base_path . DIRECTORY_SEPARATOR . self::MANIFEST_FILE;
+
+        if ( ! file_exists($manifest_path)) {
             $this->manifest = [];
             return $this->manifest;
         }
