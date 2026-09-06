@@ -246,15 +246,7 @@ final class StarmusR2DirectService implements IStarmusStorageService
             throw new RuntimeException('STARMUS_R2_SECRET_KEY is not defined or is empty.');
         }
 
-        if (! \defined('STARMUS_R2_ENDPOINT')) {
-            throw new RuntimeException('STARMUS_R2_ENDPOINT is not defined or is empty.');
-        }
-        // Read via constant() so static analysis cannot infer the literal value; this
-        // preserves the empty-string guard when wp-config.php defines the constant as ''.
-        $r2_endpoint = (string) \constant('STARMUS_R2_ENDPOINT');
-        if (trim($r2_endpoint) === '') {
-            throw new RuntimeException('STARMUS_R2_ENDPOINT is not defined or is empty.');
-        }
+        $r2_endpoint = $this->getRequiredStringConstant('STARMUS_R2_ENDPOINT');
 
         $this->bucket = \defined('STARMUS_R2_BUCKET') ? STARMUS_R2_BUCKET : 'starmus-audio';
         $account_id = STARMUS_R2_ACCOUNT_ID;
@@ -299,6 +291,27 @@ final class StarmusR2DirectService implements IStarmusStorageService
                 'secret' => STARMUS_S3_SECRET_KEY,
             ],
         ]);
+    }
+
+    private function getRequiredStringConstant(string $constant_name): string
+    {
+        if (! \defined($constant_name)) {
+            throw new RuntimeException(\sprintf('%s is not defined or is empty.', $constant_name));
+        }
+
+        $constant_value = \constant($constant_name);
+
+        if (! \is_scalar($constant_value)) {
+            throw new RuntimeException(\sprintf('%s is not defined or is empty.', $constant_name));
+        }
+
+        $resolved_value = (string) $constant_value;
+
+        if ($resolved_value === '') {
+            throw new RuntimeException(\sprintf('%s is not defined or is empty.', $constant_name));
+        }
+
+        return $resolved_value;
     }
 
     private function createOptimizedVersion(string $input, array $params): ?string

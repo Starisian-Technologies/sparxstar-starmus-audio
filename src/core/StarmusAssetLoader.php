@@ -453,19 +453,20 @@ JS;
     private function build_runtime_bootstrap_base(array $config): array
     {
         $runtime_projection = $this->package_resolver->get_runtime_projection();
+        $recording_id = $this->resolve_runtime_recording_id();
 
         return [
             'version' => $this->resolve_version(),
             'config' => $config,
             'env' => wp_get_environment_type(),
-            'recordingId' => isset(self::$editor_data['post_id']) ? (int) self::$editor_data['post_id'] : 0,
+            'recordingId' => $recording_id,
             'restUrl' => esc_url_raw(rest_url()),
             'homeUrl' => esc_url_raw(home_url('/')),
             'pageType' => 'unknown',
             'mode' => $this->resolve_bootstrap_mode(),
             'artifact' => [
                 'type' => $runtime_projection['artifactType'] ?? 'OralRuntimeArtifact',
-                'id' => isset(self::$editor_data['post_id']) ? (string) self::$editor_data['post_id'] : '',
+                'id' => $recording_id > 0 ? (string) $recording_id : '',
             ],
             'runtime' => [
                 'eventSchemaId' => $runtime_projection['eventSchemaId'] ?? 'starmus.oral-runtime-event',
@@ -482,6 +483,22 @@ JS;
                 'timeout' => 2000,
             ],
         ];
+    }
+
+    private function resolve_runtime_recording_id(): int
+    {
+        if (isset(self::$editor_data['post_id'])) {
+            return (int) self::$editor_data['post_id'];
+        }
+
+        $recording_id = filter_input(
+            INPUT_GET,
+            'starmus_recording_id',
+            FILTER_VALIDATE_INT,
+            ['options' => ['min_range' => 1]]
+        );
+
+        return \is_int($recording_id) ? $recording_id : 0;
     }
 
     /**

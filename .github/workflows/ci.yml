@@ -60,7 +60,7 @@ jobs:
       - name: Validate STAR/AIWA compliance
         run: |
           pnpm run i18n-check
-          grep -q "WordPress.*6\.4" starmus-audio-recorder.php || echo "⚠️ WordPress 6.4+ requirement not found"
+          grep -q "WordPress.*6\.9" starmus-audio-recorder.php || echo "⚠️ WordPress 6.9+ requirement not found"
           grep -r "star-" src/ || echo "⚠️ STAR prefix not found in source"
 
       - name: Run static analysis
@@ -106,7 +106,7 @@ jobs:
         run: pnpm run test:wp-env
 
       - name: Stop WordPress test environment
-        run: pnpm run env:stop
+        run: pnpm run env:stop || true
 
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps chromium
