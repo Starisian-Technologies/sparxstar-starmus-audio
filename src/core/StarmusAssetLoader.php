@@ -413,21 +413,21 @@ final class StarmusAssetLoader
         $base_json = (string) wp_json_encode($base, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 
         return <<<JS
-// The asset loader emits the authoritative runtime bootstrap immediately before this
-// bundle executes. Page-surface fields written to window.STARMUS_BOOTSTRAP earlier
-// in the document are preserved; base fields fill any unset slots.
-(function () {
-    var base = {$base_json};
-    var page = window.STARMUS_BOOTSTRAP || {};
-    base.pageType = page.pageType || base.pageType;
-    base.mode = page.mode || base.mode;
-    base.postId = page.postId !== undefined ? page.postId : base.postId;
-    base.canCommit = page.canCommit !== undefined ? page.canCommit : base.canCommit;
-    base.artifact = page.artifact || base.artifact;
-    base.hosts = page.hosts !== undefined ? page.hosts : base.hosts;
-    window.STARMUS_BOOTSTRAP = base;
-}());
-JS;
+            // The asset loader emits the authoritative runtime bootstrap immediately before this
+            // bundle executes. Page-surface fields written to window.STARMUS_BOOTSTRAP earlier
+            // in the document are preserved; base fields fill any unset slots.
+            (function () {
+                var base = {$base_json};
+                var page = window.STARMUS_BOOTSTRAP || {};
+                base.pageType = page.pageType || base.pageType;
+                base.mode = page.mode || base.mode;
+                base.postId = page.postId !== undefined ? page.postId : base.postId;
+                base.canCommit = page.canCommit !== undefined ? page.canCommit : base.canCommit;
+                base.artifact = page.artifact || base.artifact;
+                base.hosts = page.hosts !== undefined ? page.hosts : base.hosts;
+                window.STARMUS_BOOTSTRAP = base;
+            }());
+            JS;
     }
 
     private function resolve_bootstrap_mode(): string

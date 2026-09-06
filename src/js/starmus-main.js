@@ -320,9 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const instanceId =
-                bootstrap.hosts.formId ||
-                recorderForm.getAttribute("data-starmus-instance") ||
-                "";
+                bootstrap.hosts.formId || recorderForm.getAttribute("data-starmus-instance") || "";
             initRecorderInstance(recorderForm, instanceId, bootstrap);
         } else if (bootstrap.pageType === "editor") {
             const editorRoot = document.getElementById(bootstrap.hosts.editorRootId || "");

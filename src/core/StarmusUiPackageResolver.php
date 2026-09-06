@@ -1,17 +1,14 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Starisian\Sparxstar\Starmus\core;
-
-use Starisian\Sparxstar\Starmus\helpers\StarmusLogger;
 
 use function file_exists;
 use function file_get_contents;
 use function filemtime;
-use function is_array;
-use function is_string;
 use function json_decode;
+
+use Starisian\Sparxstar\Starmus\helpers\StarmusLogger;
 
 final class StarmusUiPackageResolver
 {
@@ -47,16 +44,16 @@ final class StarmusUiPackageResolver
     {
         $manifest = $this->load_manifest();
         $assets = $manifest['assets'] ?? [];
-        $asset = is_array($assets) && isset($assets[$asset_key]) && is_array($assets[$asset_key])
+        $asset = \is_array($assets) && isset($assets[$asset_key]) && \is_array($assets[$asset_key])
             ? $assets[$asset_key]
             : [];
 
-        $handle = is_string($asset['handle'] ?? null) ? $asset['handle'] : '';
-        $type = is_string($asset['type'] ?? null) ? $asset['type'] : 'script';
-        $package = is_string($asset['package'] ?? null) ? $asset['package'] : '';
-        $surface = is_string($asset['surface'] ?? null) ? $asset['surface'] : '';
+        $handle = \is_string($asset['handle'] ?? null) ? $asset['handle'] : '';
+        $type = \is_string($asset['type'] ?? null) ? $asset['type'] : 'script';
+        $package = \is_string($asset['package'] ?? null) ? $asset['package'] : '';
+        $surface = \is_string($asset['surface'] ?? null) ? $asset['surface'] : '';
 
-        $external_url = is_string($asset['externalUrl'] ?? null) ? $asset['externalUrl'] : '';
+        $external_url = \is_string($asset['externalUrl'] ?? null) ? $asset['externalUrl'] : '';
         if ($external_url !== '') {
             return [
                 'handle' => $handle,
@@ -68,7 +65,7 @@ final class StarmusUiPackageResolver
             ];
         }
 
-        $min_rel = is_string($asset['min'] ?? null) ? $asset['min'] : '';
+        $min_rel = \is_string($asset['min'] ?? null) ? $asset['min'] : '';
         if ($min_rel !== '' && $this->base_path !== '' && file_exists($this->base_path . $min_rel)) {
             return [
                 'handle' => $handle,
@@ -80,7 +77,7 @@ final class StarmusUiPackageResolver
             ];
         }
 
-        $src_rel = is_string($asset['src'] ?? null) ? $asset['src'] : '';
+        $src_rel = \is_string($asset['src'] ?? null) ? $asset['src'] : '';
         if ($src_rel !== '' && $this->base_path !== '' && file_exists($this->base_path . $src_rel)) {
             return [
                 'handle' => $handle,
@@ -110,7 +107,7 @@ final class StarmusUiPackageResolver
         $manifest = $this->load_manifest();
         $runtime = $manifest['runtime'] ?? [];
 
-        return is_array($runtime) ? $runtime : [];
+        return \is_array($runtime) ? $runtime : [];
     }
 
     private function resolve_version(): string
@@ -132,8 +129,8 @@ final class StarmusUiPackageResolver
             return $this->manifest;
         }
 
-        $normalized_base_path = \rtrim($this->base_path, '/\\');
-        $manifest_path        = $normalized_base_path . DIRECTORY_SEPARATOR . self::MANIFEST_FILE;
+        $normalized_base_path = rtrim($this->base_path, '/\\');
+        $manifest_path = $normalized_base_path . DIRECTORY_SEPARATOR . self::MANIFEST_FILE;
 
         if ( ! file_exists($manifest_path)) {
             $this->manifest = [];
@@ -141,13 +138,13 @@ final class StarmusUiPackageResolver
         }
 
         $manifest_json = file_get_contents($manifest_path);
-        if ( ! is_string($manifest_json) || $manifest_json === '') {
+        if ( ! \is_string($manifest_json) || $manifest_json === '') {
             $this->manifest = [];
             return $this->manifest;
         }
 
         $decoded = json_decode($manifest_json, true);
-        if ( ! is_array($decoded)) {
+        if ( ! \is_array($decoded)) {
             StarmusLogger::error(
                 '[StarmusUiPackageResolver] Failed to parse manifest: ' . $manifest_path,
                 ['json_error' => json_last_error_msg()]
