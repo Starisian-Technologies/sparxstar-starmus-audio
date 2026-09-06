@@ -252,7 +252,7 @@ final class StarmusR2DirectService implements IStarmusStorageService
         // Read via constant() so static analysis cannot infer the literal value; this
         // preserves the empty-string guard when wp-config.php defines the constant as ''.
         $r2_endpoint = (string) \constant('STARMUS_R2_ENDPOINT');
-        if ($r2_endpoint === '') {
+        if (trim($r2_endpoint) === '') {
             throw new RuntimeException('STARMUS_R2_ENDPOINT is not defined or is empty.');
         }
 

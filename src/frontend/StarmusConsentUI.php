@@ -18,10 +18,6 @@ class StarmusConsentUI
 {
     private const MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5MB
 
-    private const CONSENT_STYLE_HANDLE = 'starmus-consent-style';
-
-    private const CONSENT_SCRIPT_HANDLE = 'starmus-consent-script';
-
     // Strict MIME allowlist for validation
     private const ALLOWED_MIMES = [
         'image/png',

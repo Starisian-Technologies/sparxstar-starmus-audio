@@ -40,20 +40,6 @@ if ( ! \defined('ABSPATH')) {
 final class StarmusAssetLoader
 {
     /**
-     * Handle for the production bundle script.
-     *
-     * @var string
-     */
-    private const HANDLE_PROD_BUNDLE = 'starmus-audio-recorder-script.bundle';
-
-    /**
-     * Handle for the main stylesheet.
-     *
-     * @var string
-     */
-    private const STYLE_HANDLE = 'starmus-audio-recorder-styles';
-
-    /**
      * StarmusSettings settings object
      */
     private ?StarmusSettings $settings = null;
@@ -307,8 +293,11 @@ final class StarmusAssetLoader
      */
     private function enqueue_styles(): void
     {
+        $style_handle = '';
+
         try {
             $style_asset = $this->package_resolver->resolve_asset('recorderStyle');
+            $style_handle = $style_asset['handle'];
             $css_path = $style_asset['url'];
 
             if ($css_path === '') {
@@ -325,7 +314,7 @@ final class StarmusAssetLoader
             StarmusLogger::log($throwable);
         }
 
-        $this->starmusEnqueueImageAssets($style_asset['handle']);
+        $this->starmusEnqueueImageAssets($style_handle);
     }
 
     /**
@@ -415,6 +404,9 @@ final class StarmusAssetLoader
         wp_add_inline_style($style_handle, $custom_css);
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     private function build_bootstrap_inline_script(array $config): string
     {
         $base = $this->build_runtime_bootstrap_base($config);

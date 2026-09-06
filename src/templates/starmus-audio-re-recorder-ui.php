@@ -27,11 +27,11 @@ $consent_message ??= __('By submitting this recording, you agree to our', 'starm
 $data_policy_url ??= '';
 $bootstrap_page = [
     'pageType' => 'rerecorder',
-    'postId' => (int) ($post_id ?? 0),
+    'postId' => (int) $post_id,
     'canCommit' => current_user_can('publish_posts'),
     'artifact' => [
         'type' => 'OralRuntimeArtifact',
-        'id' => (string) ($post_id ?? 0),
+        'id' => (string) $post_id,
     ],
     'hosts' => [
         'formId' => $instance_id,
@@ -67,7 +67,7 @@ $bootstrap_page = [
             <!-- NOTE: dc_creator is mapped to Post Title in StarmusSchemaMapper/SubmissionHandler -->
             <input type="hidden" name="dc_creator" value="<?php echo esc_attr($existing_title ?? ''); ?>">
             <input type="hidden" name="artifact_id" value="<?php echo esc_attr((string) ($script_id ?? 0)); ?>">
-            <input type="hidden" name="post_id" value="<?php echo esc_attr((string) ($post_id ?? 0)); ?>">
+            <input type="hidden" name="post_id" value="<?php echo esc_attr((string) $post_id); ?>">
 
             <div id="starmus_step1_<?php echo esc_attr($instance_id); ?>" class="starmus-step" data-starmus-step="1">
                 <h2><?php esc_html_e('Initial Setup', 'starmus-audio-recorder'); ?></h2>
