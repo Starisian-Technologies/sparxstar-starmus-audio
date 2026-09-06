@@ -81,7 +81,7 @@
     },
     "packageManager": "pnpm@10.29.2",
     "devDependencies": {
-        "@babel/core": "^7.29.0",
+        "@babel/core": "^7.29.6",
         "@babel/eslint-parser": "latest",
         "@babel/preset-env": "^7.29.5",
         "@eslint/js": "latest",
