@@ -26,8 +26,8 @@ final class StarmusUiPackageResolver
         string $base_url = '',
         string $base_path = ''
     ) {
-        $this->base_url = $base_url !== '' ? rtrim($base_url, '/') . '/' : '';
-        $this->base_path = $base_path !== '' ? rtrim($base_path, '/') . '/' : '';
+        $this->base_url = $base_url !== '' ? \rtrim($base_url, '/') . '/' : '';
+        $this->base_path = $base_path !== '' ? \rtrim($base_path, '/') . '/' : '';
     }
 
     /**
@@ -66,7 +66,7 @@ final class StarmusUiPackageResolver
         }
 
         $min_rel = \is_string($asset['min'] ?? null) ? $asset['min'] : '';
-        if ($min_rel !== '' && $this->base_path !== '' && file_exists($this->base_path . $min_rel)) {
+        if ($min_rel !== '' && $this->base_path !== '' && \file_exists($this->base_path . $min_rel)) {
             return [
                 'handle' => $handle,
                 'url' => $this->base_url . $min_rel,
@@ -78,7 +78,7 @@ final class StarmusUiPackageResolver
         }
 
         $src_rel = \is_string($asset['src'] ?? null) ? $asset['src'] : '';
-        if ($src_rel !== '' && $this->base_path !== '' && file_exists($this->base_path . $src_rel)) {
+        if ($src_rel !== '' && $this->base_path !== '' && \file_exists($this->base_path . $src_rel)) {
             return [
                 'handle' => $handle,
                 'url' => $this->base_url . $src_rel,
@@ -129,10 +129,10 @@ final class StarmusUiPackageResolver
             return $this->manifest;
         }
 
-        $normalized_base_path = rtrim($this->base_path, '/\\');
+        $normalized_base_path = \rtrim($this->base_path, '/\\');
         $manifest_path = $normalized_base_path . DIRECTORY_SEPARATOR . self::MANIFEST_FILE;
 
-        if ( ! file_exists($manifest_path)) {
+        if ( ! \file_exists($manifest_path)) {
             $this->manifest = [];
             return $this->manifest;
         }
@@ -143,7 +143,7 @@ final class StarmusUiPackageResolver
             return $this->manifest;
         }
 
-        $decoded = json_decode($manifest_json, true);
+        $decoded = \json_decode($manifest_json, true);
         if ( ! \is_array($decoded)) {
             StarmusLogger::error(
                 '[StarmusUiPackageResolver] Failed to parse manifest: ' . $manifest_path,

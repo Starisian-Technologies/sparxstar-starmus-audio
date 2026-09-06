@@ -27,6 +27,12 @@ the chunked-upload client and capture UX are the capture UI package's. The
 reviewed transcript and its translation are ESU's; acoustic measurement is
 ours, and interpreting what a measurement means is ESU's.
 
+**ESU** is the platform component that owns the canonical linguistic record —
+transcription, translation, interpretation, and human correction — and stores
+no audio. Its canonical name and scope live in the governance registry and in
+ESU's own repository; this file deliberately does not restate an expansion it
+cannot verify from either, and no reader should infer one from context.
+
 ## What it stops owning
 
 CMS templates and shortcodes · CMS admin screens · custom-post-type and
