@@ -194,20 +194,20 @@ final class StarmusAfricaBandwidthService
             return [];
         }
 
-        $size_mb       = filesize($file_path) / (1024 * 1024);
+        $size_mb = filesize($file_path) / (1024 * 1024);
         $country_upper = strtoupper(trim($country_code));
-        $code_known    = array_key_exists($country_upper, self::COUNTRY_COST_PER_MB);
-        $cost_per_mb   = $code_known ? self::COUNTRY_COST_PER_MB[$country_upper] : self::DEFAULT_COST_PER_MB;
+        $code_known = \array_key_exists($country_upper, self::COUNTRY_COST_PER_MB);
+        $cost_per_mb = $code_known ? self::COUNTRY_COST_PER_MB[$country_upper] : self::DEFAULT_COST_PER_MB;
 
         return [
-            'size_mb'           => round($size_mb, 2),
+            'size_mb' => round($size_mb, 2),
             'cost_estimate_usd' => round($size_mb * $cost_per_mb, 4),
-            'cost_per_mb_usd'   => $cost_per_mb,
-            'country'           => $country_upper,
-            'cost_country'      => $code_known ? $country_upper : '',
-            'download_time_2g'  => round($size_mb / 0.03, 0) . 's', // ~30 KB/s
-            'download_time_3g'  => round($size_mb / 0.1, 0) . 's',  // ~100 KB/s
-            'recommended'       => $size_mb > 5 ? '2g' : ($size_mb > 2 ? '3g' : 'wifi'),
+            'cost_per_mb_usd' => $cost_per_mb,
+            'country' => $country_upper,
+            'cost_country' => $code_known ? $country_upper : '',
+            'download_time_2g' => round($size_mb / 0.03, 0) . 's', // ~30 KB/s
+            'download_time_3g' => round($size_mb / 0.1, 0) . 's',  // ~100 KB/s
+            'recommended' => $size_mb > 5 ? '2g' : ($size_mb > 2 ? '3g' : 'wifi'),
         ];
     }
 }

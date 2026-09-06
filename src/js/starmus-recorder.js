@@ -55,9 +55,7 @@ class LanguageSignalAnalyzer {
                 country: country,
                 probe_language: this.probeLanguages[0] || null,
             },
-            violation_flags: {
-                /* intentionally empty */
-            },
+            violation_flags: {/* intentionally empty */},
             timing_hints: [],
         };
 
@@ -456,11 +454,7 @@ function initRecorder(store, instanceId) {
                             type: "starmus/calibration-update",
                             message: msg,
                             volumePercent: vol,
-                            extra:
-                                extra ||
-                                {
-                                    /* intentionally empty */
-                                },
+                            extra: extra || {/* intentionally empty */},
                         });
                     }
                 },
@@ -521,11 +515,7 @@ function initRecorder(store, instanceId) {
 
             // Get optimized settings from SPARXSTAR
             const envData = sparxstarIntegration.getEnvironmentData();
-            const settings =
-                envData.recordingSettings ||
-                {
-                    /* intentionally empty */
-                };
+            const settings = envData.recordingSettings || {/* intentionally empty */};
 
             // Apply tier-based audio constraints
             const audioConstraints = {

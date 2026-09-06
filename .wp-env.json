@@ -1,5 +1,5 @@
 {
-  "core": "WordPress/WordPress#6.4",
+  "core": "WordPress/WordPress#6.9",
   "phpVersion": "8.2",
   "plugins": ["."],
   "themes": ["https://downloads.wordpress.org/theme/twentytwentyfour.1.0.zip"],

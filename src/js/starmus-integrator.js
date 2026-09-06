@@ -11,11 +11,7 @@
  * @global
  * @namespace
  */
-window.Starmus =
-    window.Starmus ||
-    {
-        /* intentionally empty */
-    };
+window.Starmus = window.Starmus || {/* intentionally empty */};
 
 /**
  * Current version of the Starmus integration layer.
@@ -75,31 +71,11 @@ window.addEventListener("sparxstar:environment-ready", (e) => {
         return;
     }
 
-    const raw =
-        e.detail ||
-        {
-            /* intentionally empty */
-        };
-    const tech =
-        raw.technical ||
-        {
-            /* intentionally empty */
-        };
-    const rawTech =
-        tech.raw ||
-        {
-            /* intentionally empty */
-        };
-    const profile =
-        tech.profile ||
-        {
-            /* intentionally empty */
-        };
-    const idents =
-        raw.identifiers ||
-        {
-            /* intentionally empty */
-        }; // Sometimes at root
+    const raw = e.detail || {/* intentionally empty */};
+    const tech = raw.technical || {/* intentionally empty */};
+    const rawTech = tech.raw || {/* intentionally empty */};
+    const profile = tech.profile || {/* intentionally empty */};
+    const idents = raw.identifiers || {/* intentionally empty */}; // Sometimes at root
     // Handle case where identifiers might be inside technical or separate (based on logs)
 
     /**
@@ -118,37 +94,21 @@ window.addEventListener("sparxstar:environment-ready", (e) => {
     const normalizedEnv = {
         // 1. Device Info (Merge Detector + Profile)
         device: {
-            ...(rawTech.device ||
-                {
-                    /* intentionally empty */
-                }),
+            ...(rawTech.device || {/* intentionally empty */}),
             class: profile.deviceClass || "unknown",
-            os:
-                raw.identifiers?.deviceDetails?.os ||
-                {
-                    /* intentionally empty */
-                },
+            os: raw.identifiers?.deviceDetails?.os || {/* intentionally empty */},
             userAgent: navigator.userAgent,
         },
 
         // 2. Browser Info
         browser: {
-            ...(rawTech.browser ||
-                {
-                    /* intentionally empty */
-                }),
-            ...(raw.identifiers?.deviceDetails?.client ||
-                {
-                    /* intentionally empty */
-                }),
+            ...(rawTech.browser || {/* intentionally empty */}),
+            ...(raw.identifiers?.deviceDetails?.client || {/* intentionally empty */}),
         },
 
         // 3. Network Info
         network: {
-            ...(rawTech.network ||
-                {
-                    /* intentionally empty */
-                }),
+            ...(rawTech.network || {/* intentionally empty */}),
             profile: profile.networkProfile || "unknown",
         },
 
@@ -161,16 +121,8 @@ window.addEventListener("sparxstar:environment-ready", (e) => {
 
         // 5. Features / Battery / Perf
         features: {
-            battery:
-                rawTech.battery ||
-                {
-                    /* intentionally empty */
-                },
-            performance:
-                rawTech.performance ||
-                {
-                    /* intentionally empty */
-                },
+            battery: rawTech.battery || {/* intentionally empty */},
+            performance: rawTech.performance || {/* intentionally empty */},
         },
 
         // 6. Init Error Array (Required by Schema)
