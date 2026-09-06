@@ -319,7 +319,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            initRecorderInstance(recorderForm, bootstrap.hosts.formId || "", bootstrap);
+            const instanceId =
+                bootstrap.hosts.formId ||
+                recorderForm.getAttribute("data-starmus-instance") ||
+                "";
+            initRecorderInstance(recorderForm, instanceId, bootstrap);
         } else if (bootstrap.pageType === "editor") {
             const editorRoot = document.getElementById(bootstrap.hosts.editorRootId || "");
             if (!editorRoot) {
