@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Starisian\Sparxstar\Starmus\core;
 
-use InvalidArgumentException;
 use Starisian\Sparxstar\Starmus\helpers\StarmusLogger;
 
 use function file_exists;
@@ -26,19 +25,13 @@ final class StarmusUiPackageResolver
     private readonly string $base_url;
     private readonly string $base_path;
 
-public function __construct(
-    string $base_url = '',
-    string $base_path = ''
-) {
-    // Allow both values to be empty (e.g. unit tests / non-WP contexts).
-    // Fail only when the resolver is partially configured.
-    if (($base_url === '') !== ($base_path === '')) {
-        throw new InvalidArgumentException('StarmusUiPackageResolver requires both base_url and base_path to be provided together.');
+    public function __construct(
+        string $base_url = '',
+        string $base_path = ''
+    ) {
+        $this->base_url = $base_url !== '' ? rtrim($base_url, '/') . '/' : '';
+        $this->base_path = $base_path !== '' ? rtrim($base_path, '/') . '/' : '';
     }
-
-    $this->base_url = $base_url !== '' ? rtrim($base_url, '/') . '/' : '';
-    $this->base_path = $base_path !== '' ? rtrim($base_path, '/') . '/' : '';
-}
 
     /**
      * @return array{
