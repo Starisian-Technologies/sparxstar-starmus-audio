@@ -25,11 +25,32 @@ $editor_data = [
     'waveform_data' => isset($context['starmus_waveform_json']) ? json_decode($context['starmus_waveform_json'], true) : null,
     'canCommit' => current_user_can('edit_post', $current_post_id),
 ];
+$bootstrap_page = [
+    'pageType' => 'editor',
+    'postId' => $current_post_id,
+    'canCommit' => current_user_can('edit_post', $current_post_id),
+    'artifact' => [
+        'type' => 'OralRuntimeArtifact',
+        'id' => (string) $current_post_id,
+    ],
+    'hosts' => [
+        'editorRootId' => 'starmus-editor-root',
+    ],
+];
 ?>
 
 <!-- JS Bootstrap Data -->
 <script>
-    window.STARMUS_EDITOR_DATA = <?php echo wp_json_encode($editor_data); ?>;
+(function () {
+    window.STARMUS_BOOTSTRAP = window.STARMUS_BOOTSTRAP || {};
+    var page = <?php echo wp_json_encode($bootstrap_page, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+    window.STARMUS_BOOTSTRAP.pageType = page.pageType;
+    window.STARMUS_BOOTSTRAP.postId = page.postId;
+    window.STARMUS_BOOTSTRAP.canCommit = page.canCommit;
+    window.STARMUS_BOOTSTRAP.artifact = page.artifact;
+    window.STARMUS_BOOTSTRAP.hosts = page.hosts;
+}());
+window.STARMUS_EDITOR_DATA = <?php echo wp_json_encode($editor_data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
 </script>
 
 
@@ -52,7 +73,7 @@ $editor_data = [
                 } else {
                     esc_html_e('No Recording', 'starmus-audio-recorder');
                 }
-?>
+                ?>
             </span>
         </h2>
         <div class="starmus-editor__time">

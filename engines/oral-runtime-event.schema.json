@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://starisian.com/schemas/starmus/oral-runtime-event.schema.json",
+  "title": "OralRuntimeEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "eventVersion",
+    "artifactId",
+    "type",
+    "actor",
+    "timestamp",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eventVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "artifactId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nodeId": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "PHRASE_SELECTED",
+        "TOKEN_CORRECTED",
+        "SPEAKER_AFFIRMED",
+        "CONFIDENCE_RECOMPUTED",
+        "ABILITY_EXECUTED",
+        "TRANSCRIPTION_RETRAINED",
+        "OFFLINE_CAPTURE_STORED"
+      ]
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actorId",
+        "actorType"
+      ],
+      "properties": {
+        "actorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actorType": {
+          "type": "string",
+          "enum": [
+            "human",
+            "system",
+            "ability",
+            "community"
+          ]
+        },
+        "authorityId": {
+          "type": "string"
+        }
+      }
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payload": {},
+    "lineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "parentEventId": {
+          "type": "string"
+        },
+        "replayOrdinal": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "governanceProjection": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}
