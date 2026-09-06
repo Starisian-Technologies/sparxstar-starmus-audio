@@ -1,0 +1,13 @@
+{
+  "repository": "sparxstar-starmus-audio",
+  "version": "0.9.2",
+  "namespace": "Starisian\\Sparxstar\\Starmus",
+  "symbols": [
+    {
+      "symbol": "Starisian\\Sparxstar\\Starmus\\core\\StarmusUiPackageResolver",
+      "type": "class",
+      "owner": "core",
+      "path": "src/core/StarmusUiPackageResolver.php"
+    }
+  ]
+}

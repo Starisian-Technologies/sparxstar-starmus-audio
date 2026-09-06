@@ -15,6 +15,46 @@ Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQL
 
 This object **must** be present before JS bundles run.It defines **what this page is allowed to do**.
 
+Runtime Doctrine
+----------------
+
+Starmus now treats the **OralRuntimeArtifact** as the primary object.
+
+The waveform, transcript, confidence, lineage, governance, and playback state are all **runtime projections**, not source truth.
+
+Starmus **must**:
+
+* preserve append-only lineage
+
+* remain offline-capable
+
+* treat the waveform as a projection surface, not runtime authority
+
+* emit deterministic runtime events
+
+* preserve replay continuity
+
+Starmus **must not**:
+
+* infer runtime state from DOM structure
+
+* couple rendering to orchestration
+
+* let renderer code own cognition assembly or governance decisions
+
+* assume cloud connectivity
+
+Canonical Runtime Schemas
+-------------------------
+
+The constitutional substrate for runtime continuity now lives in:
+
+* `engines/oral-runtime-event.schema.json`
+
+* `engines/runtime-capability-projection.schema.json`
+
+These define the versioned event envelope and capability projection that package-driven runtime surfaces must honor.
+
 Module Responsibilities
 -----------------------
 

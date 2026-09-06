@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://starisian.com/schemas/starmus/runtime-capability-projection.schema.json",
+  "title": "RuntimeCapabilityProjection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mediaRecorder",
+    "localPersistence",
+    "cloudTranscription",
+    "uploadAvailability",
+    "syncHealth",
+    "networkQuality",
+    "storagePressure"
+  ],
+  "properties": {
+    "mediaRecorder": {
+      "type": "string",
+      "enum": [
+        "available",
+        "unavailable",
+        "unknown"
+      ]
+    },
+    "localPersistence": {
+      "type": "string",
+      "enum": [
+        "available",
+        "unavailable",
+        "degraded",
+        "unknown"
+      ]
+    },
+    "cloudTranscription": {
+      "type": "string",
+      "enum": [
+        "available",
+        "unavailable",
+        "deferred",
+        "unknown"
+      ]
+    },
+    "uploadAvailability": {
+      "type": "string",
+      "enum": [
+        "available",
+        "offline-only",
+        "unavailable",
+        "unknown"
+      ]
+    },
+    "syncHealth": {
+      "type": "string",
+      "enum": [
+        "idle",
+        "syncing",
+        "offline",
+        "degraded",
+        "unknown"
+      ]
+    },
+    "networkQuality": {
+      "type": "string"
+    },
+    "storagePressure": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "elevated",
+        "critical",
+        "unknown"
+      ]
+    }
+  }
+}

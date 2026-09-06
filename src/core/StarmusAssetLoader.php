@@ -22,8 +22,6 @@ use function array_map;
 use function array_values;
 use function defined;
 use function explode;
-use function file_exists;
-use function filemtime;
 use function is_admin;
 
 use Starisian\Sparxstar\Starmus\helpers\StarmusLogger;
@@ -42,23 +40,11 @@ if ( ! \defined('ABSPATH')) {
 final class StarmusAssetLoader
 {
     /**
-     * Handle for the production bundle script.
-     *
-     * @var string
-     */
-    private const HANDLE_PROD_BUNDLE = 'starmus-audio-recorder-script.bundle';
-
-    /**
-     * Handle for the main stylesheet.
-     *
-     * @var string
-     */
-    private const STYLE_HANDLE = 'starmus-audio-recorder-styles';
-
-    /**
      * StarmusSettings settings object
      */
     private ?StarmusSettings $settings = null;
+
+    private readonly StarmusUiPackageResolver $package_resolver;
 
     /**
      * Editor data to be localized, set by shortcode loader
@@ -72,9 +58,13 @@ final class StarmusAssetLoader
      *
      * @param StarmusSettings $settings The settings instance to use for configuration.
      */
-    public function __construct(StarmusSettings $settings)
+    public function __construct(StarmusSettings $settings, ?StarmusUiPackageResolver $package_resolver = null)
     {
         $this->settings = $settings;
+        $this->package_resolver = $package_resolver ?? new StarmusUiPackageResolver(
+            \defined('STARMUS_URL') ? STARMUS_URL : '',
+            \defined('STARMUS_PATH') ? STARMUS_PATH : ''
+        );
         $this->register_hooks();
     }
 
@@ -132,68 +122,28 @@ final class StarmusAssetLoader
      */
     private function enqueue_app_mode_assets(): void
     {
-        $url = \defined('STARMUS_URL') ? STARMUS_URL : '';
-        $path = \defined('STARMUS_PATH') ? STARMUS_PATH : '';
-
-        $css_asset = $this->resolve_app_mode_asset(
-            $url,
-            $path,
-            'assets/css/sparxstar-app-mode.min.css',
-            'src/css/spparxstar-app-mode.css'
-        );
+        $css_asset = $this->package_resolver->resolve_asset('appModeStyle');
 
         if ($css_asset['url'] !== '') {
             wp_enqueue_style(
-                'sparxstar-app-mode-css',
+                $css_asset['handle'],
                 $css_asset['url'],
                 [],
                 $css_asset['version']
             );
         }
 
-        $js_asset = $this->resolve_app_mode_asset(
-            $url,
-            $path,
-            'assets/js/sparxstar-app-mode.min.js',
-            'src/js/appmode/sparxstar-app-mode.js'
-        );
+        $js_asset = $this->package_resolver->resolve_asset('appModeScript');
 
         if ($js_asset['url'] !== '') {
             wp_enqueue_script(
-                'sparxstar-app-mode-js',
+                $js_asset['handle'],
                 $js_asset['url'],
                 [],
                 $js_asset['version'],
                 true
             );
         }
-    }
-
-    /**
-     * Resolve minified app mode assets with source fallback.
-     *
-     * @return array{url: string, version: string}
-     */
-    private function resolve_app_mode_asset(string $base_url, string $base_path, string $min_rel, string $src_rel): array
-    {
-        if ($base_path !== '' && file_exists($base_path . $min_rel)) {
-            return [
-                'url' => $base_url . $min_rel,
-                'version' => (string) filemtime($base_path . $min_rel),
-            ];
-        }
-
-        if ($base_path !== '' && file_exists($base_path . $src_rel)) {
-            return [
-                'url' => $base_url . $src_rel,
-                'version' => (string) filemtime($base_path . $src_rel),
-            ];
-        }
-
-        return [
-            'url' => '',
-            'version' => $this->resolve_version(),
-        ];
     }
 
     /**
@@ -207,10 +157,14 @@ final class StarmusAssetLoader
     private function enqueue_production_assets(): void
     {
         try {
-            $url = \defined('STARMUS_URL') ? STARMUS_URL : '';
-            $js_path = $url . 'assets/js/starmus-audio-recorder-script.bundle.min.js';
+            $script_asset = $this->package_resolver->resolve_asset('recorderScript');
+            $js_path = $script_asset['url'];
 
             StarmusLogger::info('[Starmus AssetLoader] Enqueueing JS: ' . $js_path);
+
+            if ($js_path === '') {
+                return;
+            }
 
             $dependencies = [];
             if (wp_script_is('sparxstar-user-environment-check-app', 'registered')) {
@@ -221,56 +175,37 @@ final class StarmusAssetLoader
             }
 
             wp_enqueue_script(
-                self::HANDLE_PROD_BUNDLE,
+                $script_asset['handle'],
                 $js_path,
                 $dependencies,
-                $this->resolve_version(),
+                $script_asset['version'],
                 true
             );
 
-            // Add type="module" (PHP 8.2 Strict Closure)
-            add_filter(
-                'script_loader_tag',
-                function (string $tag, string $handle): string {
-                    if ($handle === self::HANDLE_PROD_BUNDLE) {
-                        return str_replace('<script ', '<script type="module" ', $tag);
-                    }
+            if ($script_asset['type'] === 'module') {
+                add_filter(
+                    'script_loader_tag',
+                    function (string $tag, string $handle) use ($script_asset): string {
+                        if ($handle === $script_asset['handle']) {
+                            return str_replace('<script ', '<script type="module" ', $tag);
+                        }
 
-                    return $tag;
-                },
-                10,
-                2
-            );
+                        return $tag;
+                    },
+                    10,
+                    2
+                );
+            }
 
             // Get Config safely
             $config = $this->get_localization_data();
 
             // Localize Scripts
-            wp_localize_script(self::HANDLE_PROD_BUNDLE, 'starmusConfig', $config);
-
-            // Resolve optional recording ID from context (e.g. Consent Handoff)
-            $recording_id = filter_input(INPUT_GET, 'starmus_recording_id', FILTER_SANITIZE_NUMBER_INT);
-            if ( ! $recording_id && isset(self::$editor_data['post_id'])) {
-                $recording_id = self::$editor_data['post_id'];
-            }
-
-            wp_localize_script(
-                self::HANDLE_PROD_BUNDLE,
-                'STARMUS_BOOTSTRAP',
-                [
-                    'version' => $this->resolve_version(),
-                    'config' => $config,
-                    'env' => wp_get_environment_type(),
-                    'postId' => get_the_ID() ?: 0,
-                    'recordingId' => $recording_id ? (int) $recording_id : 0, // Injected for workflow handoff
-                    'restUrl' => esc_url_raw(rest_url()),
-                    'homeUrl' => esc_url_raw(home_url('/')),
-                    'sparxstar' => [
-                        'available' => wp_script_is('sparxstar-user-environment-check-app', 'registered'),
-                        'error_reporting' => wp_script_is('sparxstar-error-reporter', 'registered'),
-                        'timeout' => 2000,
-                    ],
-                ]
+            wp_localize_script($script_asset['handle'], 'starmusConfig', $config);
+            wp_add_inline_script(
+                $script_asset['handle'],
+                $this->build_bootstrap_inline_script($config),
+                'before'
             );
 
             // MEMORY SAFETY: Garbage collect before processing editor data which might be huge
@@ -334,7 +269,7 @@ final class StarmusAssetLoader
             // Nothing simple in PHP side. We rely on GC.
 
             wp_localize_script(
-                self::HANDLE_PROD_BUNDLE,
+                $script_asset['handle'],
                 'STARMUS_EDITOR_DATA',
                 $final_editor_data
             );
@@ -358,21 +293,28 @@ final class StarmusAssetLoader
      */
     private function enqueue_styles(): void
     {
+        $style_handle = '';
+
         try {
-            $url = \defined('STARMUS_URL') ? STARMUS_URL : '';
-            $css_path = $url . 'assets/css/starmus-audio-recorder-styles.min.css';
+            $style_asset = $this->package_resolver->resolve_asset('recorderStyle');
+            $style_handle = $style_asset['handle'];
+            $css_path = $style_asset['url'];
+
+            if ($css_path === '') {
+                return;
+            }
 
             wp_enqueue_style(
-                self::STYLE_HANDLE,
+                $style_asset['handle'],
                 $css_path,
                 [],
-                $this->resolve_version()
+                $style_asset['version']
             );
         } catch (Throwable $throwable) {
             StarmusLogger::log($throwable);
         }
 
-        $this->starmusEnqueueImageAssets();
+        $this->starmusEnqueueImageAssets($style_handle);
     }
 
     /**
@@ -444,8 +386,12 @@ final class StarmusAssetLoader
         }
     }
 
-    private function starmusEnqueueImageAssets(): void
+    private function starmusEnqueueImageAssets(string $style_handle): void
     {
+        if ($style_handle === '') {
+            return;
+        }
+
         // 2. Get the full URL to your image
         $bg_image_url = plugins_url('src/frontend/images/bo-play.png', __FILE__);
 
@@ -455,7 +401,110 @@ final class StarmusAssetLoader
                 --sparxstar-starmus-bg-url: url('{$bg_image_url}');
             }
         ";
-        wp_add_inline_style('starmus-styles', $custom_css);
+        wp_add_inline_style($style_handle, $custom_css);
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     */
+    private function build_bootstrap_inline_script(array $config): string
+    {
+        $base = $this->build_runtime_bootstrap_base($config);
+        $base_json = (string) wp_json_encode($base, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+
+        return <<<JS
+// The asset loader emits the authoritative runtime bootstrap immediately before this
+// bundle executes. Page-surface fields written to window.STARMUS_BOOTSTRAP earlier
+// in the document are preserved; base fields fill any unset slots.
+(function () {
+    var base = {$base_json};
+    var page = window.STARMUS_BOOTSTRAP || {};
+    base.pageType = page.pageType || base.pageType;
+    base.mode = page.mode || base.mode;
+    base.postId = page.postId !== undefined ? page.postId : base.postId;
+    base.canCommit = page.canCommit !== undefined ? page.canCommit : base.canCommit;
+    base.artifact = page.artifact || base.artifact;
+    base.hosts = page.hosts !== undefined ? page.hosts : base.hosts;
+    window.STARMUS_BOOTSTRAP = base;
+}());
+JS;
+    }
+
+    private function resolve_bootstrap_mode(): string
+    {
+        $env = wp_get_environment_type();
+
+        if ($env === 'production') {
+            return 'production';
+        }
+
+        if ($env === 'staging') {
+            return 'draft';
+        }
+
+        return 'development';
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     *
+     * @return array<string, mixed>
+     */
+    private function build_runtime_bootstrap_base(array $config): array
+    {
+        $runtime_projection = $this->package_resolver->get_runtime_projection();
+
+        return [
+            'version' => $this->resolve_version(),
+            'config' => $config,
+            'env' => wp_get_environment_type(),
+            'recordingId' => isset(self::$editor_data['post_id']) ? (int) self::$editor_data['post_id'] : 0,
+            'restUrl' => esc_url_raw(rest_url()),
+            'homeUrl' => esc_url_raw(home_url('/')),
+            'pageType' => 'unknown',
+            'mode' => $this->resolve_bootstrap_mode(),
+            'artifact' => [
+                'type' => $runtime_projection['artifactType'] ?? 'OralRuntimeArtifact',
+                'id' => isset(self::$editor_data['post_id']) ? (string) self::$editor_data['post_id'] : '',
+            ],
+            'runtime' => [
+                'eventSchemaId' => $runtime_projection['eventSchemaId'] ?? 'starmus.oral-runtime-event',
+                'eventSchemaVersion' => $runtime_projection['eventSchemaVersion'] ?? '1.0.0',
+                'capabilitySchemaId' => $runtime_projection['capabilitySchemaId'] ?? 'starmus.runtime-capability-projection',
+                'capabilitySchemaVersion' => $runtime_projection['capabilitySchemaVersion'] ?? '1.0.0',
+                'packages' => $runtime_projection['packages'] ?? [],
+                'doctrine' => $runtime_projection['doctrine'] ?? [],
+                'capabilityProjection' => $this->build_runtime_capability_projection($config),
+            ],
+            'sparxstar' => [
+                'available' => wp_script_is('sparxstar-user-environment-check-app', 'registered'),
+                'error_reporting' => wp_script_is('sparxstar-error-reporter', 'registered'),
+                'timeout' => 2000,
+            ],
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     *
+     * @return array<string, string>
+     */
+    private function build_runtime_capability_projection(array $config): array
+    {
+        $tus_endpoint = '';
+        if (isset($config['endpoints']) && \is_array($config['endpoints']) && isset($config['endpoints']['tusUpload'])) {
+            $tus_endpoint = (string) $config['endpoints']['tusUpload'];
+        }
+
+        return [
+            'mediaRecorder' => 'unknown',
+            'localPersistence' => 'unknown',
+            'cloudTranscription' => 'deferred',
+            'uploadAvailability' => $tus_endpoint !== '' ? 'available' : 'unknown',
+            'syncHealth' => 'idle',
+            'networkQuality' => 'unknown',
+            'storagePressure' => 'unknown',
+        ];
     }
 
     /**

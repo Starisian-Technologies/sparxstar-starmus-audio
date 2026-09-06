@@ -99,6 +99,61 @@ import sparxstarIntegration from "./starmus-sparxstar-integration.js";
 const store = createStore();
 window.StarmusStore = store;
 
+function updateRuntimeCapabilityProjection(bootstrap) {
+    const runtime = bootstrap.runtime || {};
+    const capabilityProjection = runtime.capabilityProjection || {};
+    const networkQuality =
+        typeof navigator !== "undefined" &&
+        navigator.connection &&
+        navigator.connection.effectiveType
+            ? navigator.connection.effectiveType
+            : "unknown";
+
+    bootstrap.runtime = {
+        ...runtime,
+        capabilityProjection: {
+            ...capabilityProjection,
+            mediaRecorder:
+                typeof window !== "undefined" && typeof window.MediaRecorder !== "undefined"
+                    ? "available"
+                    : "unavailable",
+            localPersistence:
+                typeof window !== "undefined" && typeof window.indexedDB !== "undefined"
+                    ? "available"
+                    : "unavailable",
+            uploadAvailability:
+                navigator.onLine === false
+                    ? "offline-only"
+                    : capabilityProjection.uploadAvailability || "unknown",
+            syncHealth: navigator.onLine === false ? "offline" : "idle",
+            networkQuality,
+        },
+    };
+
+    return bootstrap;
+}
+
+function getRuntimeBootstrap() {
+    // STARMUS_BOOTSTRAP is composed by PHP via wp_add_inline_script(..., 'before')
+    // immediately before this bundle executes, so the merged object is the
+    // authoritative runtime contract for initialization.
+    if (!window.STARMUS_BOOTSTRAP || typeof window.STARMUS_BOOTSTRAP !== "object") {
+        console.warn("[StarmusMain] Missing STARMUS_BOOTSTRAP.");
+        return null;
+    }
+
+    if (
+        !window.STARMUS_BOOTSTRAP.pageType ||
+        window.STARMUS_BOOTSTRAP.pageType === "unknown" ||
+        !window.STARMUS_BOOTSTRAP.hosts
+    ) {
+        console.warn("[StarmusMain] Incomplete STARMUS_BOOTSTRAP.");
+        return null;
+    }
+
+    return updateRuntimeCapabilityProjection(window.STARMUS_BOOTSTRAP);
+}
+
 /**
  * Initializes the Starmus Recorder components for a given form instance.
  * Sets up complete recording workflow including state management, UI controls,
@@ -128,7 +183,7 @@ window.StarmusStore = store;
  * @see {@link initOffline} Offline queue initialization
  * @see {@link initAutoMetadata} Metadata synchronization
  */
-function initRecorderInstance(recorderForm, instanceId) {
+function initRecorderInstance(recorderForm, instanceId, bootstrap) {
     console.log("[StarmusMain] Booting RECORDER for ID:", instanceId);
 
     recorderForm.addEventListener("submit", (e) => e.preventDefault());
@@ -140,7 +195,7 @@ function initRecorderInstance(recorderForm, instanceId) {
             console.log("[StarmusMain] SPARXSTAR integration ready:", environmentData);
 
             // Initialize other modules with environment data
-            initCore(store, instanceId, environmentData);
+            initCore(store, instanceId, { ...environmentData, bootstrap });
             initUI(store, {}, instanceId);
             initRecorder(store, instanceId);
             initOffline();
@@ -150,7 +205,7 @@ function initRecorderInstance(recorderForm, instanceId) {
             console.warn("[StarmusMain] SPARXSTAR integration failed, using fallback:", error);
 
             // Fallback initialization without SPARXSTAR
-            initCore(store, instanceId, {});
+            initCore(store, instanceId, { bootstrap });
             initUI(store, {}, instanceId);
             initRecorder(store, instanceId);
             initOffline();
@@ -244,16 +299,41 @@ function initEditorInstance() {
 /* 4. BOOTSTRAP ON DOM READY */
 document.addEventListener("DOMContentLoaded", () => {
     try {
-        const recorderForm = document.querySelector("form[data-starmus-instance]");
-        const editorRoot = document.getElementById("starmus-editor-root");
+        const bootstrap = getRuntimeBootstrap();
+        if (!bootstrap) {
+            return;
+        }
 
-        if (recorderForm) {
-            const instanceId = recorderForm.getAttribute("data-starmus-instance");
-            initRecorderInstance(recorderForm, instanceId);
-        } else if (editorRoot) {
+        if (bootstrap.pageType === "recorder" || bootstrap.pageType === "rerecorder") {
+            let recorderForm = null;
+            if (bootstrap.hosts.formSelector) {
+                recorderForm = document.querySelector(bootstrap.hosts.formSelector);
+            } else if (bootstrap.hosts.formId) {
+                recorderForm = document.querySelector(
+                    'form[data-starmus-instance="' + bootstrap.hosts.formId + '"]',
+                );
+            }
+
+            if (!recorderForm) {
+                console.error("[StarmusMain] Recorder host not found for bootstrap.");
+                return;
+            }
+
+            const instanceId =
+                bootstrap.hosts.formId ||
+                recorderForm.getAttribute("data-starmus-instance") ||
+                "";
+            initRecorderInstance(recorderForm, instanceId, bootstrap);
+        } else if (bootstrap.pageType === "editor") {
+            const editorRoot = document.getElementById(bootstrap.hosts.editorRootId || "");
+            if (!editorRoot) {
+                console.error("[StarmusMain] Editor host not found for bootstrap.");
+                return;
+            }
+
             initEditorInstance();
         } else {
-            console.warn("[StarmusMain] ⚠️ No Starmus form or editor found.");
+            console.warn("[StarmusMain] Unsupported bootstrap page type:", bootstrap.pageType);
         }
     } catch (e) {
         console.error("[StarmusMain] Boot failed:", e);
