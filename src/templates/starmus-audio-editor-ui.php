@@ -73,7 +73,7 @@ window.STARMUS_EDITOR_DATA = <?php echo wp_json_encode($editor_data, JSON_HEX_TA
                 } else {
                     esc_html_e('No Recording', 'starmus-audio-recorder');
                 }
-                ?>
+?>
             </span>
         </h2>
         <div class="starmus-editor__time">
