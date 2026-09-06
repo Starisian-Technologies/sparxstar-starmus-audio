@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "1.0.0",
+  "runtime": {
+    "artifactType": "OralRuntimeArtifact",
+    "eventSchemaId": "starmus.oral-runtime-event",
+    "eventSchemaVersion": "1.0.0",
+    "capabilitySchemaId": "starmus.runtime-capability-projection",
+    "capabilitySchemaVersion": "1.0.0",
+    "packages": {
+      "renderer": {
+        "name": "@sparxstar/starmus-renderer",
+        "version": "local",
+        "surface": "waveform-projection"
+      },
+      "runtime": {
+        "name": "@sparxstar/starmus-runtime",
+        "version": "local",
+        "surface": "oral-runtime-projection"
+      }
+    },
+    "doctrine": {
+      "must": [
+        "preserve append-only lineage",
+        "remain offline-capable",
+        "treat waveform as projection, not source truth",
+        "emit deterministic runtime events",
+        "preserve replay continuity"
+      ],
+      "mustNot": [
+        "infer runtime state from DOM structure",
+        "own cognition assembly in renderer code",
+        "own governance decisions in UI projection code",
+        "assume cloud connectivity",
+        "couple rendering to orchestration"
+      ]
+    }
+  },
+  "assets": {
+    "recorderScript": {
+      "handle": "starmus-audio-recorder-script.bundle",
+      "package": "@sparxstar/starmus-runtime",
+      "surface": "runtime",
+      "type": "module",
+      "min": "assets/js/starmus-audio-recorder-script.bundle.min.js"
+    },
+    "recorderStyle": {
+      "handle": "starmus-audio-recorder-styles",
+      "package": "@sparxstar/starmus-renderer",
+      "surface": "renderer",
+      "type": "style",
+      "min": "assets/css/starmus-audio-recorder-styles.min.css",
+      "src": "src/css/starmus-audio-recorder.css"
+    },
+    "appModeScript": {
+      "handle": "sparxstar-app-mode-js",
+      "package": "@sparxstar/starmus-runtime",
+      "surface": "runtime",
+      "type": "script",
+      "min": "assets/js/sparxstar-app-mode.min.js",
+      "src": "src/js/appmode/sparxstar-app-mode.js"
+    },
+    "appModeStyle": {
+      "handle": "sparxstar-app-mode-css",
+      "package": "@sparxstar/starmus-renderer",
+      "surface": "renderer",
+      "type": "style",
+      "min": "assets/css/sparxstar-app-mode.min.css",
+      "src": "src/css/sparxstar-app-mode.css"
+    },
+    "prosodyScript": {
+      "handle": "starmus-prosody-js",
+      "package": "@sparxstar/starmus-renderer",
+      "surface": "prosody",
+      "type": "script",
+      "min": "assets/js/starmus-prosody-engine.min.js",
+      "src": "src/js/prosody/starmus-prosody-engine.js"
+    },
+    "prosodyStyle": {
+      "handle": "starmus-prosody-css",
+      "package": "@sparxstar/starmus-renderer",
+      "surface": "prosody",
+      "type": "style",
+      "min": "assets/css/starmus-prosody-engine.min.css",
+      "src": "src/css/starmus-prosody-engine.css"
+    },
+    "consentScript": {
+      "handle": "starmus-consent-script",
+      "package": "@sparxstar/starmus-runtime",
+      "surface": "consent",
+      "type": "script",
+      "min": "assets/js/starmus-legal.min.js",
+      "src": "src/js/consent/starmus-legal.js"
+    },
+    "consentStyle": {
+      "handle": "starmus-consent-style",
+      "package": "@sparxstar/starmus-renderer",
+      "surface": "consent",
+      "type": "style",
+      "min": "assets/css/starmus-consent.min.css",
+      "src": "src/css/consent/starmus-consent.css"
+    }
+  }
+}
